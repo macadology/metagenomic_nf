@@ -1,0 +1,252 @@
+#!/usr/bin/env nextflow
+// TODO
+/*
+Add customized logs
+*/
+
+// DSL 2 syntax
+nextflow.preview.dsl=2
+
+// help message
+params.help = false
+def helpMessage() {
+    log.info"""
+    ############################################################################
+    Jon's metagenomic nextflow pipeline
+    ----------------------------------------------------------------------------
+    Usage:
+    The typical command for running the pipeline is as follows:
+        nextflow run main.nf
+    Input arguments:
+        --readtype              (raw) raw reads
+                                (fastp) fastp reads *DEFAULT*
+                                (decont) human decontaminated fastp reads (custom) reads from custom directory and filename. User must define --querydir and --queryglob.
+        --querydir              Path to a folder containing all input fastq.
+                                Required if readtype is (custom)
+        --queryglob             Glob pattern of paired reads.
+                                Required if readtype is (custom)
+                                E.g.: "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+        --profilers             Metagenomics profilers to run. Options ->
+                                'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'srst2', 'rgi'
+        --fastpreads            Whether the default reads should be referenced
+                                from the fastp folder (true) or raw folder (false). Default: true
+        --overwrite             Overwrite existing directories. Otherwise,
+                                skip. Default: false
+    Other parameters:
+    Edit params in nextflow.config where appropriate.
+
+    Examples:
+        nextflow run main.nf #show the reads that'll be used as inputs
+        nextflow run main.nf --readtype custom --querydir [Directory] --queryglob [glob pattern]
+        nextflow run main.nf --readtype raw --profilers fastp
+        nextflow run main.nf --krakenMMAP --profilers kraken2,bracken
+        nextflow run main.nf --readtype decont --krakenMMAP --profilers kraken2,bracken
+        nextflow run main.nf --profilers fastp,kraken2,bracken
+        nextflow run main.nf --profilers srst2
+        nextflow run main.nf --profilers align --bwaIndex ref.fasta
+        nextflow run main.nf --profilers align --bwaIndexDir IndexDir --bwaIndex ref.fasta
+
+    Note:
+    For a faster kraken run, increase size of /dev/shm in /etc/fstab and enable --krakenMMAP. The pipeline will copy the database to /dev/shm, run kraken with --memory-mapping, and remove the database after. I recommend not running other profilers since the ram will be full.
+        nextflow run main.nf --krakenMMAP --profilers kraken2,bracken
+    ############################################################################
+    """.stripIndent()
+}
+if (params.help){
+    helpMessage()
+    exit 0
+}
+
+// Profilers
+Set profilers_expected = ['align', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'srst2', 'rgi']
+Set profilers = []
+if(params.profilers.getClass() != Boolean){
+    Set profilers_input = params.profilers.split(',')
+    Set profiler_diff = profilers_input - profilers_expected
+    profilers = profilers_input.intersect(profilers_expected)
+    if( profiler_diff.size() != 0 ) {
+    	log.warn "[Pipeline warning] Profiler $profiler_diff is not supported yet! Will only run $profilers.\n"
+    }
+}
+
+println profilers
+
+//=========== Parameters
+// See nextflow.config
+
+// Inputs
+
+// import modules
+include { ALIGN; MAPPED } from './modules/align'
+include { FASTP } from './modules/fastp'
+include { DECONT } from './modules/decontamination'
+include { KRAKEN2; BRACKEN } from './modules/kraken2'
+include { CENTRIFUGE } from './modules/centrifuge'
+include { HUMANN3 } from './modules/humann3'
+include { SRST2 } from './modules/srst2'
+include { RGI } from './modules/rgi'
+
+//---------- Pre processes ------------
+// https://groovy-lang.gitlab.io/101-scripts/basico/command_local-en.html
+// For kraken, load database into ram.
+// Remember to increase the space of /dev/shm
+// Check /etc/fstab and add line
+// none         /dev/shm            tmpfs       defaults,size=61G     0       0
+// Not ideal for using in combination with --resume
+if(params.krakenMMAP && profilers.contains('kraken2')){
+    def result  = new StringBuilder()
+    def error   = new StringBuilder()
+    DB = "/dev/shm/database"
+    cmd0 = "mkdir $DB".execute()
+    println "Loading $params.krakenDB to $DB..."
+    println "Loading $params.krakenDB to $DB..."
+    cmd = ["sh", "-c", "cp -r $params.krakenDB/*.k2d $DB"].execute()
+    //cmd.consumeProcessOutput(result, error)
+    cmd.waitForOrKill(1000*60*10) //Wait 10 min before initiating the other steps
+}
+
+//---------- Main workflow ------------
+workflow {
+    //------ Input -------
+    // Possible inputs --> (raw) raw reads, (fastp) fastp reads, (decont) human decontaminated fastp reads (custom) custom reads
+    // Define (querydir) Directory containing reads and (queryglob) Read file format
+    //
+    switch(params.readtype) {
+         // Case statement defined for 4 cases
+         // Each case statement section has a break condition to exit the loop
+         case "raw":
+            querydir = params.rawdir
+            queryglob = "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+            break;
+         case "fastp":
+            querydir = params.procdir
+            queryglob = "fastp_*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+            break;
+         case "decont":
+            querydir = params.procdir
+            queryglob = "decont_*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+            break;
+         case "custom":
+            //User defined querydir and queryglob
+            if(params.querydir){
+                querydir = params.querydir
+            }else{
+                throw new Exception("Error: readtype is 'custom' but querydir is empty.")
+            }
+            if(params.queryglob){
+                queryglob = params.queryglob
+            }else{
+                throw new Exception("Error: readtype is 'custom' but queryglob is empty")
+            }
+            break;
+         default:
+            //fastp
+            querydir = params.procdir
+            queryglob = "fastp_*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+            break;
+      }
+
+    //------ Get Prefix ---------
+    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: true, maxDepth: 3) { file ->
+        for(int i = 0; i < 2 ; i++) {
+            file = file.getParent()
+            pref = file.name //prefix
+            if (pref ==~ /[A-Z]{3}\d{3}/){ //The pattern means 3 letters 3 nums.
+                return pref
+                break
+            }
+        }
+    }
+    if( params.profilers.size() == 0 ) {
+    	ch_input.view()
+    }
+
+
+    //------ Fastp + Decontamination -------
+    if(profilers.contains('fastp')){
+        FASTP(ch_input)
+        //FASTP.out.stdout.view { "FASTP STDOUT:\n$it" }
+        ch_fastpreads = FASTP.out.reads
+        //FASTP.out.reads.view()
+    }else{
+        ch_fastpreads = ch_input
+    }
+
+    if(profilers.contains('decont')){
+        DECONT(ch_fastpreads, params.decontIndex)
+        ch_reads = DECONT.out.reads
+    }else{
+        ch_reads = ch_fastpreads
+    }
+
+    //-------- Alignment ----------
+    if(profilers.contains('align')){
+        ALIGN(ch_reads, params.bwaIndexDir, params.bwaIndex)
+        MAPPED(ALIGN.out.output.collect(), params.bwaIndex)
+        //ALIGN.out.stdout.view { "ALIGN STDOUT:\n$it" }
+        //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
+    }
+
+    //------ Kraken + Bracken ---------
+    if(profilers.contains('kraken2')){
+        if(params.krakenMMAP){
+            KRAKEN2(ch_reads, DB)
+            // Note, this causes the output folder to be named 'database'. Fix it
+        }else{
+            KRAKEN2(ch_reads, params.krakenDB)
+        }
+        //KRAKEN2.out.stdout.view { "KRAKEN2 STDOUT:\n$it" }
+    }
+
+    if(profilers.contains('bracken')){
+        if(profilers.contains('kraken2')){
+            ch_kraken = KRAKEN2.out.output
+            //ch_kraken.view()
+        }else{
+            ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
+            ch_kraken.view()
+        }
+        BRACKEN(ch_kraken, params.krakenDB)
+        //BRACKEN.out.stdout.view { "BRACKEN STDOUT:\n$it" }
+    }
+
+
+    //------ Centrifuge --------
+    if(profilers.contains('centrifuge')){
+        CENTRIFUGE(ch_reads, params.centrifugeDBdir)
+    }
+
+    //------ Metaphlan3 + Humann3 -------
+    if(profilers.contains('humann3')){
+        HUMANN3(ch_reads, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
+        //HUMANN3.out.stdout.view()
+    }
+
+    //------ srst2 -------
+    if(profilers.contains('srst2')){
+        SRST2(ch_reads, params.srst2DB)
+    }
+
+    //------ Megares (RGI) ----------
+    if(profilers.contains('rgi')){
+        RGI(ch_reads)
+    }
+
+
+    //------ diamond + megan
+}
+
+//---------- Clean up ------------
+// Removes database from ram to free up space.
+workflow.onComplete {
+    if(params.krakenMMAP && profilers.contains('kraken2')){
+        println "Removing $DB..."
+        cmd2 = ["sh", "-c", "rm -r $DB"].execute()
+        cmd2.waitForOrKill(1000*10)
+    }
+}
+
+
+/*
+docker run $(for i in $(ls $PWD); do echo " -v $(readlink -f $i):/home/ubuntu/$(basename $i)"; done) -it ***container*** /bin/bash
+*/
