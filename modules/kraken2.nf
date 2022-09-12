@@ -48,6 +48,7 @@ process KRAKEN2 {
 
 process BRACKEN {
     tag "${prefix}"
+    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
     container 'macadology/kraken2'
 
     input:
@@ -61,12 +62,20 @@ process BRACKEN {
     val("${prefix}"), emit: prefix
 
     script:
-    """
-    which bracken
-    for taxa in P F G S
-    do
-        bracken -d $brackenDB -r $params.krakenReadlength -i $krakenReport -o ${prefix}.bracken.\$taxa -l \$taxa
-    done
-    """
+    def outputdir = new File("$params.procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.P")
+    if (outputdir.exists() && !params.overwrite) {
+        println "$outputdir exists. Skipping $prefix ..."
+        """
+        exit 148
+        """
+    }else{
+        """
+        which bracken
+        for taxa in P F G S
+        do
+            bracken -d $brackenDB -r $params.krakenReadlength -i $krakenReport -o ${prefix}.bracken.\$taxa -l \$taxa
+        done
+        """
+    }
 }
 //docker run $(for i in $(ls $PWD); do echo " -v $(readlink -f $i):/home/ubuntu/$(basename $i)"; done) -it macadology/kraken /bin/bash

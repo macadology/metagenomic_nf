@@ -28,6 +28,11 @@ process DECONT {
         """
         exit 148
         """
+    }else if (params.test) {
+        println "(Test) Running decont on ${prefix}"
+        """
+        exit 148
+        """
     }else{
         """
         #which bwa

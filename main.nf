@@ -38,6 +38,7 @@ def helpMessage() {
 
     Examples:
         nextflow run main.nf #show the reads that'll be used as inputs
+        nextflow run main.nf -w <WORKDIR> # specify where to store work directorya
         nextflow run main.nf --readtype custom --querydir [Directory] --queryglob [glob pattern] #show reads queryglob and directory
         nextflow run main.nf --readtype raw --profilers fastp,decont
         nextflow run main.nf --readtype fastp --profilers decont
@@ -46,11 +47,12 @@ def helpMessage() {
         nextflow run main.nf --readtype decont --krakenMMAP --profilers kraken2,bracken
         nextflow run main.nf --profilers fastp,kraken2,bracken
         nextflow run main.nf --profilers srst2
+        nextflow run main.nf --profilers humann3
         nextflow run main.nf --profilers align --bwaIndex ref.fasta
         nextflow run main.nf --profilers align --bwaIndexDir IndexDir --bwaIndex ref.fasta
 
     Note:
-    For a faster kraken run, increase size of /dev/shm in /etc/fstab and enable --krakenMMAP. The pipeline will copy the database to /dev/shm, run kraken with --memory-mapping, and remove the database after. I recommend not running other profilers since the ram will be full.
+    For a faster kraken run, increase size of /dev/shm in /etc/fstab and enable --krakenMMAP. The pipeline will copy the database to /dev/shm, run kraken with --memory-mapping, and remove the database after. I recommend not running other profilers while doing this since the ram will be full.
         nextflow run main.nf --krakenMMAP --profilers kraken2,bracken
     ############################################################################
     """.stripIndent()
@@ -187,6 +189,7 @@ workflow {
             }
         }
     }
+    // ch_input = Channel.fromPath("$querydir/**/$queryglob", type: 'file', maxDepth: params.maxdepth).map(it -> [ it.getParent().name, it]).groupTuple()
 
     if( params.profilers.size() == 0 ) {
     	ch_input.view()
@@ -239,8 +242,10 @@ workflow {
             ch_kraken = KRAKEN2.out.output
             //ch_kraken.view()
         }else{
-            ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
-            ch_kraken.view()
+            //ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
+            dbname = file(params.krakenDB).name
+            ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/$dbname/*.{kraken2.report,kraken2.tax}",flat: true, size: 2, checkIfExists: true) { file -> file.getParent().getParent().getParent().name }
+            //ch_kraken.view()
         }
         BRACKEN(ch_kraken, params.krakenDB)
         //BRACKEN.out.stdout.view { "BRACKEN STDOUT:\n$it" }
@@ -274,13 +279,13 @@ workflow {
 
 //---------- Clean up ------------
 // Removes database from ram to free up space.
-// workflow.onComplete {
-//     if(params.krakenMMAP && profilers.contains('kraken2')){
-//         println "Removing $DB..."
-//         cmd2 = ["sh", "-c", "rm -r $DB"].execute()
-//         cmd2.waitForOrKill(1000*10)
-//     }
-// }
+workflow.onComplete {
+    if(params.krakenMMAP && profilers.contains('kraken2')){
+        println "Removing $DB..."
+        cmd2 = ["sh", "-c", "rm -r $DB"].execute()
+        cmd2.waitForOrKill(1000*10)
+    }
+}
 
 
 /*
