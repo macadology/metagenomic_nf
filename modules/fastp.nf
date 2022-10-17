@@ -6,7 +6,7 @@ process FASTP {
     tag "${prefix}"
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
 
     output:
     publishDir "$params.procdir/${prefix}/fastp", mode: 'copy'
@@ -16,7 +16,7 @@ process FASTP {
     stdout emit: stdout
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/fastp")
+    def outputdir = file("$params.procdir/${prefix}/fastp")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

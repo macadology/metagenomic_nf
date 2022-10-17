@@ -7,7 +7,7 @@ process CENTRIFUGE {
     container 'macadology/centrifuge'
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
     path(centrifugeDBdir)
 
     output:
@@ -17,7 +17,7 @@ process CENTRIFUGE {
     stdout emit: stdout
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/centrifuge")
+    def outputdir = file("$params.procdir/${prefix}/centrifuge")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

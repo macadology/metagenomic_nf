@@ -6,13 +6,13 @@ process DECONT {
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
     path(decontIndexDir)
     val(decontIndexName)
 
     output:
     publishDir "$params.procdir/${prefix}/fastp", mode: 'copy'
-    tuple prefix, path("decont_${decontIndexName}_$reads1"), path("decont_${decontIndexName}_$reads2"), emit: reads
+    tuple val(prefix), path("decont_${decontIndexName}_$reads1"), path("decont_${decontIndexName}_$reads2"), emit: reads
     path("aln-se_${prefix}.sam")
     val("${prefix}"), emit: prefix
     stdout emit: stdout

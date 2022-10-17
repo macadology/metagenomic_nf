@@ -3,24 +3,27 @@
 process HUMANN3 {
     tag "${prefix}"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
+    //errorStrategy { task.exitStatus in 148 ? 'ignore' : 'ignore' }
     container 'biobakery/humann:3.1.1'
     // http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz
     // container 'macadology/humann3 '
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
     path(humannDB_Uniref)
     path(humannDB_Chocophlan)
     path(humannDB_bt2Chocophlan)
 
     output:
     publishDir "$params.procdir/${prefix}/humann3", mode: 'copy'
-    tuple path("${prefix}_*.tsv"), path("${prefix}*_humann_temp/${prefix}*"), emit: output
+    tuple path("${prefix}_*.tsv"), emit: output
+    //, path("${prefix}*_humann_temp/${prefix}*")
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/humann3")
+    // Note, existence check doesn't seem to work for aws right now...
+    def outputdir = file("$params.procdir/${prefix}/humann3")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping ${prefix} ..."
         """
@@ -28,11 +31,18 @@ process HUMANN3 {
         """
     }else{
     """
+    #exit 148 #For testing purposes, please remove after test.
     which humann
     which metaphlan
+    echo ${prefix}
     cat $reads1 $reads2 > ${prefix}.fq.gz
-    humann --input ${prefix}.fq.gz --output . --threads $params.humannThreads --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $params.humannDB_index --nproc $params.humannThreads'
+    humann --input ${prefix}.fq.gz --output . --threads $params.humannThreads --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $params.humannDB_index --nproc $params.humannThreads' --bowtie-options '--threads $params.humannThreads' --diamond-options '--threads $params.humannThreads'
     rm ${prefix}.fq.gz
+    mv ${prefix}*_humann_temp/${prefix}_bowtie2_aligned.tsv .
+    mv ${prefix}*_humann_temp/${prefix}_diamond_aligned.tsv .
+    mv ${prefix}*_humann_temp/${prefix}.log .
+    mv ${prefix}*_humann_temp/${prefix}_metaphlan_bugs_list.tsv .
+    rm -r ${prefix}*_humann_temp
     """
     }
 

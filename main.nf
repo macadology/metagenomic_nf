@@ -5,7 +5,7 @@ Add customized logs
 */
 
 // DSL 2 syntax
-nextflow.preview.dsl=2
+nextflow.enable.dsl=2
 
 // help message
 params.help = false
@@ -51,6 +51,9 @@ def helpMessage() {
         nextflow run main.nf --profilers align --bwaIndex ref.fasta
         nextflow run main.nf --profilers align --bwaIndexDir IndexDir --bwaIndex ref.fasta
 
+    AWSBatch examples :
+        nextflow run main.nf -profile batch  --bucket-dir s3://jon-nextflow-work --profilers humann3
+
     Note:
     For a faster kraken run, increase size of /dev/shm in /etc/fstab and enable --krakenMMAP. The pipeline will copy the database to /dev/shm, run kraken with --memory-mapping, and remove the database after. I recommend not running other profilers while doing this since the ram will be full.
         nextflow run main.nf --krakenMMAP --profilers kraken2,bracken
@@ -63,7 +66,7 @@ if (params.help){
 }
 
 // Profilers
-Set profilers_expected = ['align', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'srst2', 'rgi']
+Set profilers_expected = ['align', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'test', 'srst2', 'rgi']
 Set profilers = []
 if(params.profilers.getClass() != Boolean){
     Set profilers_input = params.profilers.split(',')
@@ -88,6 +91,7 @@ include { DECONT } from './modules/decontamination'
 include { KRAKEN2; BRACKEN } from './modules/kraken2'
 include { CENTRIFUGE } from './modules/centrifuge'
 include { HUMANN3 } from './modules/humann3'
+include { TEST } from './modules/test'
 include { SRST2 } from './modules/srst2'
 include { RGI } from './modules/rgi'
 
@@ -177,12 +181,15 @@ workflow {
 
     //------ Get Prefix ---------
     //// Closure after Channel.fromFilePairs() is used to parse the prefix
+    //println "$querydir/**/$queryglob"
+    querydirname = file(querydir).name
+    //println querydir
     ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: true, maxDepth: params.maxdepth) { file ->
         for(int i = 0; i < 3 ; i++) {
             file = file.getParent()
             folder = file.getParent()
             // Look for prefix by going up the path structure
-            if ("$querydir" == "$folder") {
+            if (querydirname == folder.name) {
                 pref = file.name //prefix
                 return pref
                 break
@@ -260,7 +267,13 @@ workflow {
     //------ Metaphlan3 + Humann3 -------
     if(profilers.contains('humann3')){
         HUMANN3(ch_reads, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
-        //HUMANN3.out.stdout.view()
+        HUMANN3.out.stdout.view()
+    }
+
+    //------ Test -------
+    if(profilers.contains('test')){
+        TEST(ch_reads, params.testDatabase)
+         TEST.out.stdout.view()
     }
 
     //------ srst2 -------
@@ -272,7 +285,6 @@ workflow {
     if(profilers.contains('rgi')){
         RGI(ch_reads)
     }
-
 
     //------ diamond + megan
 }

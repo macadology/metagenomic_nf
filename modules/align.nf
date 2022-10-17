@@ -6,7 +6,7 @@ process ALIGN {
     //container 'macadology/bwa'
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
     path(bwaIndexDir)
     val(bwaIndexName)
 
@@ -19,7 +19,7 @@ process ALIGN {
 
     script:
     //String indexname = "${bwaIndex.baseName}_${bwaIndex.extension}"
-    def outputdir = new File("$params.procdir/${prefix}/bwa")
+    def outputdir = file("$params.procdir/${prefix}/bwa")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

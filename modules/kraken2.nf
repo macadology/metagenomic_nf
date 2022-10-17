@@ -15,7 +15,7 @@ process KRAKEN2 {
     container 'macadology/kraken'
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
     path(krakenDB)
 
     output:
@@ -25,7 +25,7 @@ process KRAKEN2 {
     stdout emit: stdout
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/kraken2/${krakenDB.name}")
+    def outputdir = file("$params.procdir/${prefix}/kraken2/${krakenDB.name}")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
@@ -62,7 +62,7 @@ process BRACKEN {
     val("${prefix}"), emit: prefix
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.P")
+    def outputdir = file("$params.procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.S")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

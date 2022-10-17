@@ -6,7 +6,7 @@ process RGI {
     container 'macadology/rgi'
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
 
     output:
     publishDir "$params.procdir/${prefix}/rgi", mode: 'copy'
@@ -15,7 +15,7 @@ process RGI {
     stdout emit: stdout
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/rgi")
+    def outputdir = file("$params.procdir/${prefix}/rgi")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

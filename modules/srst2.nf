@@ -6,7 +6,7 @@ process SRST2 {
     container 'macadology/srst2'
 
     input:
-    tuple prefix, path(reads1), path(reads2)
+    tuple val(prefix), path(reads1), path(reads2)
     path(srst2DB)
 
     output:
@@ -16,7 +16,7 @@ process SRST2 {
     stdout emit: stdout
 
     script:
-    def outputdir = new File("$params.procdir/${prefix}/srst2/${srst2DB.name}")
+    def outputdir = file("$params.procdir/${prefix}/srst2/${srst2DB.name}")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
