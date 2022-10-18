@@ -205,7 +205,7 @@ workflow {
     // ch_input = Channel.fromPath("$querydir/**/$queryglob", type: 'file', maxDepth: params.maxdepth).map(it -> [ it.getParent().name, it]).groupTuple()
 
     //------- Set output directory -------
-    if(params.outputdir == null){
+    if(params.outputdir == ""){
         params.outputdir = params.procdir
     }
 
