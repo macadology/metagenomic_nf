@@ -4,14 +4,14 @@
 process CENTRIFUGE {
     tag "${prefix}"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
-    container 'macadology/centrifuge'
+    //container 'macadology/centrifuge'
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
     path(centrifugeDBdir)
 
     output:
-    publishDir "$params.procdir/${prefix}/centrifuge", mode: 'copy'
+    publishDir "$params.outputdir/${prefix}/centrifuge", mode: 'copy'
     tuple path("${prefix}.centrifuge.summary.tsv"), path("${prefix}.centrifuge.kreport"), path("${prefix}.centrifuge.classification.out.tar.gz"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
@@ -25,7 +25,7 @@ process CENTRIFUGE {
         """
     }else{
         """
-        centrifuge -x $centrifugeDBdir/$params.centrifugeDBname -1 $reads1 -2 $reads2 -t -p $params.centrifugeThreads -S ${prefix}.centrifuge.classification.out --report-file ${prefix}.centrifuge.summary.tsv
+        centrifuge -x $centrifugeDBdir/$params.centrifugeDBname -1 $reads1 -2 $reads2 -t -p ${task.cpus} -S ${prefix}.centrifuge.classification.out --report-file ${prefix}.centrifuge.summary.tsv
 
         centrifuge-kreport -x $centrifugeDBdir/$params.centrifugeDBname ${prefix}.centrifuge.classification.out > ${prefix}.centrifuge.kreport
 

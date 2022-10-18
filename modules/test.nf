@@ -7,13 +7,13 @@ process TEST {
     path(testDatabase)
 
     output:
-    publishDir "$params.procdir/${prefix}/test", mode: 'copy'
+    publishDir "$params.outputdir/${prefix}/test", mode: 'copy'
     path("${prefix}.txt"), emit: output
     stdout emit: stdout
     val("${prefix}"), emit: prefix
 
     script:
-    def outputdir = file("$params.procdir/${prefix}/test")
+    def outputdir = file("$params.outputdir/${prefix}/test")
     if (outputdir.exists()) {
         println "$outputdir exists. Overwriting $prefix ..."
     }

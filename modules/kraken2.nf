@@ -19,13 +19,13 @@ process KRAKEN2 {
     path(krakenDB)
 
     output:
-    publishDir "$params.procdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
+    publishDir "$params.outputdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
     tuple val("${prefix}"), path("${prefix}.kraken2.report"), path("${prefix}.kraken2.tax"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = file("$params.procdir/${prefix}/kraken2/${krakenDB.name}")
+    def outputdir = file("$params.outputdir/${prefix}/kraken2/${krakenDB.name}")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
@@ -33,9 +33,9 @@ process KRAKEN2 {
         """
     }else{
         """
-        kraken2 $mmap--db $krakenDB --paired --threads $params.krakenThreads --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads1 $reads2 --use-mpa-style > /dev/null
+        kraken2 $mmap--db $krakenDB --paired --threads ${task.cpus} --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads1 $reads2 --use-mpa-style > /dev/null
 
-        kraken2 $mmap--db $krakenDB --paired --threads $params.krakenThreads --report ${prefix}.kraken2.report $reads1 $reads2 > /dev/null
+        kraken2 $mmap--db $krakenDB --paired --threads ${task.cpus} --report ${prefix}.kraken2.report $reads1 $reads2 > /dev/null
 
         if [ ! ${params.krakenKeepOutput} == "true" ]; then
             rm ${prefix}.kraken2.out
@@ -56,13 +56,13 @@ process BRACKEN {
     path(brackenDB)
 
     output:
-    publishDir "$params.procdir/${prefix}/kraken2/${brackenDB.name}", mode: 'copy'
+    publishDir "$params.outputdir/${prefix}/kraken2/${brackenDB.name}", mode: 'copy'
     tuple path("${prefix}.bracken.P"), path("${prefix}.bracken.F"), path("${prefix}.bracken.G"), path("${prefix}.bracken.S"), emit: output
     stdout emit: stdout
     val("${prefix}"), emit: prefix
 
     script:
-    def outputdir = file("$params.procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.S")
+    def outputdir = file("$params.outputdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.S")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

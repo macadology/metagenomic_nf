@@ -14,11 +14,14 @@ def helpMessage() {
     ############################################################################
     Jon's metagenomic nextflow pipeline
     ----------------------------------------------------------------------------
+    Refer to README.md for more details.
     Usage:
     The typical command for running the pipeline is as follows:
-        nextflow run main.nf
-    Input arguments:
-        --readtype              (raw) raw reads
+        nextflow run main.nf --profilers [software]
+
+    Main input arguments:
+        --readtype              Optional
+                                (raw) raw reads
                                 (fastp) fastp reads *DEFAULT*
                                 (decont) human decontaminated fastp reads (custom) reads from custom directory and filename. User must define --querydir and --queryglob.
         --querydir              Path to a folder containing all input fastq.
@@ -33,30 +36,33 @@ def helpMessage() {
                                 from the fastp folder (true) or raw folder (false). Default: true
         --overwrite             Overwrite existing directories. Otherwise,
                                 skip. Default: false
-    Other arguments:
-    Edit params in nextflow.config or local.config where appropriate.
+        --outputdir             Path to a folder containing all input fastq.
 
-    Examples:
+    Other input arguments:
+    Edit params in nextflow.config, conf/*.conf and local.config where appropriate.
+
+    Default examples :
+        nextflow run main.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -profilers fastp,kraken2,bracken
+
+    Jonai examples :
         nextflow run main.nf #show the reads that'll be used as inputs
-        nextflow run main.nf -w <WORKDIR> # specify where to store work directorya
+        nextflow run main.nf -w [WORKDIR] # specify where to store work directory
         nextflow run main.nf --readtype custom --querydir [Directory] --queryglob [glob pattern] #show reads queryglob and directory
         nextflow run main.nf --readtype raw --profilers fastp,decont
         nextflow run main.nf --readtype fastp --profilers decont
-        nextflow run main.nf --readtype raw --queryglob [glob pattern] --profilers fastp
-        nextflow run main.nf --krakenMMAP --profilers kraken2,bracken --krakenKeepOutput true
-        nextflow run main.nf --readtype decont --krakenMMAP --profilers kraken2,bracken
-        nextflow run main.nf --profilers fastp,kraken2,bracken
-        nextflow run main.nf --profilers srst2
-        nextflow run main.nf --profilers humann3
-        nextflow run main.nf --profilers align --bwaIndex ref.fasta
-        nextflow run main.nf --profilers align --bwaIndexDir IndexDir --bwaIndex ref.fasta
+        nextflow run main.nf --readtype decont --profilers kraken2,bracken --krakenKeepOutput true #Save all kraken output
+        nextflow run main.nf --krakenMMAP --profilers kraken2,bracken #Preload kraken database. See README.md
+        nextflow run main.nf --profilers fastp,kraken2,bracken,srst2,humann3
+        nextflow run main.nf --profilers align --bwaIndex [ref.fasta]
+        nextflow run main.nf --profilers align --bwaIndexDir [IndexDir] --bwaIndex [ref.fasta]
 
     AWSBatch examples :
-        nextflow run main.nf -profile batch  --bucket-dir s3://jon-nextflow-work --profilers humann3
+        nextflow run main.nf -profile batch --bucket-dir s3://jon-nextflow-work --profilers humann3
+        nextflow run main.nf -profile batch --bucket-dir s3://jon-nextflow-work --profilers humann3
 
-    Note:
-    For a faster kraken run, increase size of /dev/shm in /etc/fstab and enable --krakenMMAP. The pipeline will copy the database to /dev/shm, run kraken with --memory-mapping, and remove the database after. I recommend not running other profilers while doing this since the ram will be full.
-        nextflow run main.nf --krakenMMAP --profilers kraken2,bracken
+    ACRC examples :
+        nextflow run main.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -w [WORKDIR] --profilers humann3
+
     ############################################################################
     """.stripIndent()
 }
@@ -95,7 +101,7 @@ include { TEST } from './modules/test'
 include { SRST2 } from './modules/srst2'
 include { RGI } from './modules/rgi'
 
-//---------- Pre processes ------------
+//---------- Kraken Preprocesses ------------
 // https://groovy-lang.gitlab.io/101-scripts/basico/command_local-en.html
 // For kraken, load database into ram.
 // Remember to increase the space of /dev/shm
@@ -179,7 +185,7 @@ workflow {
             break;
       }
 
-    //------ Get Prefix ---------
+    //------ Get prefix ---------
     //// Closure after Channel.fromFilePairs() is used to parse the prefix
     //println "$querydir/**/$queryglob"
     querydirname = file(querydir).name
@@ -198,6 +204,12 @@ workflow {
     }
     // ch_input = Channel.fromPath("$querydir/**/$queryglob", type: 'file', maxDepth: params.maxdepth).map(it -> [ it.getParent().name, it]).groupTuple()
 
+    //------- Set output directory -------
+    if(params.outputdir == null){
+        params.outputdir = params.procdir
+    }
+
+    //------- Display files ---------
     if( params.profilers.size() == 0 ) {
     	ch_input.view()
     }
@@ -273,7 +285,7 @@ workflow {
     //------ Test -------
     if(profilers.contains('test')){
         TEST(ch_reads, params.testDatabase)
-         TEST.out.stdout.view()
+        TEST.out.stdout.view()
     }
 
     //------ srst2 -------
@@ -298,8 +310,3 @@ workflow.onComplete {
         cmd2.waitForOrKill(1000*10)
     }
 }
-
-
-/*
-docker run $(for i in $(ls $PWD); do echo " -v $(readlink -f $i):/home/ubuntu/$(basename $i)"; done) -it ***container*** /bin/bash
-*/

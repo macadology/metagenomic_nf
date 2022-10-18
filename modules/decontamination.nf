@@ -1,5 +1,4 @@
  // decontamination
-
 process DECONT {
     // Remove reads that are aligned to target sequence
     tag "${prefix}"
@@ -11,7 +10,7 @@ process DECONT {
     val(decontIndexName)
 
     output:
-    publishDir "$params.procdir/${prefix}/fastp", mode: 'copy'
+    publishDir "$params.outputdir/${prefix}/fastp", mode: 'copy'
     tuple val(prefix), path("decont_${decontIndexName}_$reads1"), path("decont_${decontIndexName}_$reads2"), emit: reads
     path("aln-se_${prefix}.sam")
     val("${prefix}"), emit: prefix
@@ -36,7 +35,7 @@ process DECONT {
     }else{
         """
         #which bwa
-        bwa mem -t $params.bwaThreads $decontIndexDir/${decontIndexName} $reads1 $reads2 > aln-se_${prefix}.sam
+        bwa mem -t ${task.cpus} $decontIndexDir/${decontIndexName} $reads1 $reads2 > aln-se_${prefix}.sam
         samtools fastq -f12 -F256  -1  decont_${decontIndexName}_$reads1 -2 decont_${decontIndexName}_$reads2 aln-se_${prefix}.sam
         #> aln-se_${prefix}.sam
         #> decont_${decontIndexName}_$reads1

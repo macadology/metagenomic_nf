@@ -12,14 +12,14 @@ process ALIGN {
 
 
     output:
-    publishDir "$params.procdir/${prefix}/bwa", mode: 'copy'
+    publishDir "$params.outputdir/${prefix}/bwa", mode: 'copy'
     path "${prefix}.${bwaIndexName}.out", emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
     //String indexname = "${bwaIndex.baseName}_${bwaIndex.extension}"
-    def outputdir = file("$params.procdir/${prefix}/bwa")
+    def outputdir = file("$params.outputdir/${prefix}/bwa")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
@@ -27,7 +27,7 @@ process ALIGN {
         """
     }else{
         """
-        bwa mem -t $params.bwaThreads ${bwaIndexDir}/${bwaIndexName} $reads1 $reads2 | \\
+        bwa mem -t ${task.cpus} ${bwaIndexDir}/${bwaIndexName} $reads1 $reads2 | \\
         samtools view $params.samtoolsOptions - > "${prefix}.${bwaIndexName}.out"
         #> ${prefix}.${bwaIndexName}.out
         """
@@ -44,7 +44,7 @@ process MAPPED {
     val(bwaIndexName)
 
     output:
-    publishDir "$params.projdir/reports", mode: 'copy'
+    publishDir "$params.outputdir/reports", mode: 'copy'
     path "${bwaIndexName}.mappedreads.csv", emit: output
     stdout emit: stdout
 
