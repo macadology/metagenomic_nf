@@ -6,11 +6,12 @@ process DECONT {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
+    val(procdir)
     path(decontIndexDir)
     val(decontIndexName)
 
     output:
-    publishDir "$params.outputdir/${prefix}/fastp", mode: 'copy'
+    publishDir "$procdir/${prefix}/fastp", mode: 'copy'
     tuple val(prefix), path("decont_${decontIndexName}_$reads1"), path("decont_${decontIndexName}_$reads2"), emit: reads
     path("aln-se_${prefix}.sam")
     val("${prefix}"), emit: prefix

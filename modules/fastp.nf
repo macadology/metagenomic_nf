@@ -7,16 +7,17 @@ process FASTP {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
+    val(procdir)
 
     output:
-    publishDir "$params.outputdir/${prefix}/fastp", mode: 'copy'
+    publishDir "$procdir/${prefix}/fastp", mode: 'copy'
     tuple prefix, path("fastp_$reads1"), path("fastp_$reads2"), emit: reads
     tuple file("fastp_${prefix}.HTML"), file("fastp_${prefix}.json"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = file("$params.outputdir/${prefix}/fastp")
+    def outputdir = file("$procdir${prefix}/fastp")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

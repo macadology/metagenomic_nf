@@ -16,16 +16,17 @@ process KRAKEN2 {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
+    val(procdir)
     path(krakenDB)
 
     output:
-    publishDir "$params.outputdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
+    publishDir "$procdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
     tuple val("${prefix}"), path("${prefix}.kraken2.report"), path("${prefix}.kraken2.tax"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = file("$params.outputdir/${prefix}/kraken2/${krakenDB.name}")
+    def outputdir = file("$procdir/${prefix}/kraken2/${krakenDB.name}")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
@@ -53,16 +54,17 @@ process BRACKEN {
 
     input:
     tuple val(prefix), path(krakenReport), path(krakenTax)
+    val(procdir)
     path(brackenDB)
 
     output:
-    publishDir "$params.outputdir/${prefix}/kraken2/${brackenDB.name}", mode: 'copy'
+    publishDir "$procdir/${prefix}/kraken2/${brackenDB.name}", mode: 'copy'
     tuple path("${prefix}.bracken.P"), path("${prefix}.bracken.F"), path("${prefix}.bracken.G"), path("${prefix}.bracken.S"), emit: output
     stdout emit: stdout
     val("${prefix}"), emit: prefix
 
     script:
-    def outputdir = file("$params.outputdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.S")
+    def outputdir = file("$procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.S")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

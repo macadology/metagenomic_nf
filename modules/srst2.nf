@@ -6,16 +6,17 @@ process SRST2 {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
+    val(procdir)
     path(srst2DB)
 
     output:
-    publishDir "$params.outputdir/${prefix}/srst2/${srst2DB.name}", mode: 'copy'
+    publishDir "$procdir/${prefix}/srst2/${srst2DB.name}", mode: 'copy'
     path("${prefix}*"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = file("$params.outputdir/${prefix}/srst2/${srst2DB.name}")
+    def outputdir = file("$procdir/${prefix}/srst2/${srst2DB.name}")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

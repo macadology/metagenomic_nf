@@ -7,15 +7,16 @@ process RGI {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
+    val(procdir)
 
     output:
-    publishDir "$params.outputdir/${prefix}/rgi", mode: 'copy'
+    publishDir "$procdir/${prefix}/rgi", mode: 'copy'
     path("${prefix}*"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = file("$params.outputdir/${prefix}/rgi")
+    def outputdir = file("$procdir/${prefix}/rgi")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """

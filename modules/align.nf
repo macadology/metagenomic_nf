@@ -7,19 +7,19 @@ process ALIGN {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
+    val(procdir)
     path(bwaIndexDir)
     val(bwaIndexName)
 
-
     output:
-    publishDir "$params.outputdir/${prefix}/bwa", mode: 'copy'
+    publishDir "$procdir/${prefix}/bwa", mode: 'copy'
     path "${prefix}.${bwaIndexName}.out", emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
     //String indexname = "${bwaIndex.baseName}_${bwaIndex.extension}"
-    def outputdir = file("$params.outputdir/${prefix}/bwa")
+    def outputdir = file("$procdir/${prefix}/bwa")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
@@ -41,10 +41,11 @@ process MAPPED {
 
     input:
     path(mapped_reads)
+    val(procdir)
     val(bwaIndexName)
 
     output:
-    publishDir "$params.outputdir/reports", mode: 'copy'
+    publishDir "$procdir/reports", mode: 'copy'
     path "${bwaIndexName}.mappedreads.csv", emit: output
     stdout emit: stdout
 

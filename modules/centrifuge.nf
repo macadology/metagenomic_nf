@@ -8,16 +8,17 @@ process CENTRIFUGE {
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
-    path(centrifugeDBdir)
+    val(procdir)
+    val(centrifugeDBdir)
 
     output:
-    publishDir "$params.outputdir/${prefix}/centrifuge", mode: 'copy'
+    publishDir "$procdir/${prefix}/centrifuge", mode: 'copy'
     tuple path("${prefix}.centrifuge.summary.tsv"), path("${prefix}.centrifuge.kreport"), path("${prefix}.centrifuge.classification.out.tar.gz"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
     script:
-    def outputdir = file("$params.procdir/${prefix}/centrifuge")
+    def outputdir = file("$procdir/${prefix}/centrifuge")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
