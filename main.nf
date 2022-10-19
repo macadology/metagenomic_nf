@@ -46,7 +46,7 @@ def helpMessage() {
         nextflow run main.nf -profile jonai --profilers humann3
 
     AWSBatch examples :
-        nextflow run main.nf -profile batch --bucket-dir s3://jon-nextflow-work --profilers humann3
+        nextflow run main.nf -profile batch -plugins nf-amazon --bucket-dir s3://jon-nextflow-work --profilers humann3
 
     ACRC examples :
         nextflow run main.nf -profile acrc --general true --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -w [WORKDIR] # Show the reads that'll be used as inputs

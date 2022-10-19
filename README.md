@@ -2,7 +2,7 @@
 Metagenomic pipeline for taxonomy and functional classification.
 
 ## Modes
-The pipeline can be run in 2 modes.
+The pipeline can be run in 2 modes. `--general true`
 1. The first (specific) assumes that metagenomic_nf is in the project folder and local.config contains parameters specific to the project. The pipeline uses these parameters as default.
 2. The second (general) assumes that metagenomic_nf is a generic pipeline and ignore local.config.
 
@@ -21,8 +21,7 @@ nextflow run main.nf -profile jonai --profilers align --bwaIndex [ref.fasta]
 nextflow run main.nf -profile jonai --profilers align --bwaIndexDir [IndexDir] --bwaIndex [ref.fasta]
 
 #AWSBatch examples :
-nextflow run main.nf -profile batch --bucket-dir s3://jon-nextflow-work --profilers humann3
-nextflow run main.nf -profile batch --bucket-dir s3://jon-nextflow-work --profilers humann3
+nextflow run main.nf -profile batch -plugins nf-amazon --bucket-dir s3://jon-nextflow-work --profilers humann3
 
 #ACRC examples :
 nextflow run main.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -w [WORKDIR] --profilers humann3
