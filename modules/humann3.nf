@@ -4,9 +4,8 @@ process HUMANN3 {
     tag "${prefix}"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
     //errorStrategy { task.exitStatus in 148 ? 'ignore' : 'ignore' }
-    //container 'biobakery/humann:3.1.1'
     // http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz
-    // container 'macadology/humann3 '
+
 
     input:
     tuple val(prefix), path(reads1), path(reads2)
@@ -16,7 +15,8 @@ process HUMANN3 {
     path(humannDB_bt2Chocophlan)
 
     output:
-    publishDir "$procdir/${prefix}/humann3", mode: 'copy'
+    //publishDir "$procdir/${prefix}/humann3", mode: 'copy'
+    publishDir "$procdir/${prefix}/humann3", mode: 'move' // Use only if no other processes use humann output files. Great for saving space on ACRC
     tuple path("${prefix}_*.tsv"), emit: output
     //, path("${prefix}*_humann_temp/${prefix}*")
     val("${prefix}"), emit: prefix
