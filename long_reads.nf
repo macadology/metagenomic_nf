@@ -4,10 +4,11 @@ nextflow.enable.dsl=2
 
 // help message
 params.help = false
+params.scriptname = "long_reads.nf"
 def helpMessage() {
     log.info"""
     ############################################################################
-    Jon's metagenomic nextflow pipeline
+    Jon's metagenomic nextflow pipeline for long reads
     ----------------------------------------------------------------------------
     Refer to README.md for more details.
     Usage:
@@ -22,9 +23,9 @@ def helpMessage() {
         --queryglob             Glob pattern of paired reads.
                                 Required if readtype is (custom)
                                 Optional for others.
-                                E.g.: "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+                                E.g.: "*{fastq,fastq.gz,fq,fq.gz}"
         --profilers             Metagenomcis profilers to run. If not defined,
-                                show matched reads. Options -> 'BWA', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'srst2', 'rgi'
+                                show matched reads. Options -> 'BWA', 'minimap2', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'srst2', 'rgi'
         --readtype              (raw) raw reads
                                 (fastp) fastp reads *DEFAULT*
                                 (decont) human decontaminated fastp reads
@@ -37,20 +38,11 @@ def helpMessage() {
     (e.g. --krakenDB), or by editing the config files.
 
     Default examples :
-        nextflow run main.nf --general true --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -profilers fastp,kraken2,bracken #General mode
+        nextflow run ${params.scriptname} --general true --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -profilers fastp,kraken2,bracken #General mode
 
     Jonai examples :
-        nextflow run main.nf -profile jonai #Show the reads that'll be used as inputs
-        nextflow run main.nf -profile jonai --readtype raw --profilers fastp,decont
-        nextflow run main.nf -profile jonai -w [WORKDIR] --krakenMMAP --profilers kraken2,bracken #Preload kraken database. See README.md
-        nextflow run main.nf -profile jonai --profilers humann3
-
-    AWSBatch examples :
-        nextflow run main.nf -profile batch -plugins nf-amazon --bucket-dir s3://jon-nextflow-work --profilers humann3
-
-    ACRC examples :
-        nextflow run main.nf -profile acrc --general true --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -w [WORKDIR] # Show the reads that'll be used as inputs
-        nextflow run main.nf -profile acrc --general true --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] -w [WORKDIR] --profilers humann3
+        nextflow run ${params.scriptname} -profile jonai #Show the reads that'll be used as inputs
+        nextflow run ${params.scriptname} -profile jonai --general true --querydir [Directory] --queryglob "*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers minimap, metaphlan --mmIn [Query mmi] #Runs minimap and metaphlan
 
     ############################################################################
     """.stripIndent()
@@ -65,6 +57,7 @@ if (params.help){
 // Possible inputs --> (raw) raw reads, (fastp) fastp reads, (decont) human decontaminated fastp reads (custom) custom reads
 // Define (querydir) Directory containing reads and (queryglob) Read file format 
 
+default_queryglob = "*{fastq,fastq.gz,fq,fq.gz}"
 if(params.general){
     //Checks if local.config is a placeholder or specific to project.
     if(params.outputdir == "" || params.querydir == ""){
@@ -75,7 +68,7 @@ if(params.general){
     if(params.queryglob){
         queryglob = params.queryglob
     }else{
-        queryglob = "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
+        queryglob = "$default_queryglob"
     }
     querydir = params.querydir
     outputdir = params.outputdir
@@ -83,8 +76,6 @@ if(params.general){
     //------ Default queryglob from local.config
     if(params.default_queryglob){
         default_queryglob = params.default_queryglob
-    }else{
-        default_queryglob = "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
     }
     //------ querydir and queryglob
     if(params.querydir && params.queryglob){
@@ -127,13 +118,13 @@ if(params.general){
                 queryglob = "fastp_$default_queryglob"
                 break;
           }
-      //---------  outputdir
-      if(params.outputdir == ""){
-          outputdir = file(params.procdir)
-      } else {
-          outputdir = file(params.outputdir)
-      }
-  }
+    }
+    //---------  outputdir
+    if(!params.outputdir){
+        outputdir = params.procdir
+    } else {
+        outputdir = params.outputdir
+    }
 }
 println ""
 println "querydir : $querydir"
@@ -142,7 +133,7 @@ println "outputdir : $outputdir"
 println ""
 
 //============= Parse profilers ===========
-Set profilers_expected = ['BWA', 'bowtie', 'minimap', 'sam2fastq', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'metaphlan', 'test', 'srst2', 'rgi']
+Set profilers_expected = ['minimap', 'fastp', 'decont', 'kraken2', 'bracken', 'metaphlan', 'test']
 Set profilers = []
 if(params.profilers.getClass() != Boolean){
   Set profilers_input = params.profilers.split(',')
@@ -155,14 +146,12 @@ if(params.profilers.getClass() != Boolean){
 
 println "Running softwares : $profilers"
 
-
 //=========== Parameters ===========
-include { BWA; BOWTIE; MINIMAP; SAM2FASTQ; MAPPED } from './modules/align'
+include { MINIMAP_LR; MAPPED } from './modules/align'
 include { FASTP } from './modules/fastp'
 include { DECONT } from './modules/decontamination'
-include { KRAKEN2; BRACKEN } from './modules/kraken2'
-include { CENTRIFUGE } from './modules/centrifuge'
-include { HUMANN3; METAPHLAN } from './modules/humann3'
+include { KRAKEN2_LR; BRACKEN } from './modules/kraken2'
+include { METAPHLAN } from './modules/humann3'
 include { TEST } from './modules/test'
 include { SRST2 } from './modules/srst2'
 include { RGI } from './modules/rgi'
@@ -199,7 +188,7 @@ workflow {
     //// Closure after Channel.fromFilePairs() is used to parse the prefix
     //println "$querydir/**/$queryglob"
     querydirname = file(querydir).name
-    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: true, size:params.size, maxDepth: params.maxdepth) { file ->
+    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: true, size:1, maxDepth: params.maxdepth) { file ->
         for(int i = 0; i < 3 ; i++) {
             file = file.getParent()
             folder = file.getParent()
@@ -238,63 +227,34 @@ workflow {
     }
 
     //-------- Alignment ----------
-    if(profilers.contains('BWA')){
-        bwaIndex = file(params.bwaIndex)
-        bwaIndexDir = bwaIndex.getParent()
-        bwaIndexName = bwaIndex.getName()
-        BWA(ch_reads, outputdir, bwaIndexDir, bwaIndexName)
-        ch_sam = BWA.out.sam
-        //MAPPED(BWA.out.output.collect(), outputdir, bwaIndexName)
-        //ALIGN.out.stdout.view { "ALIGN STDOUT:\n$it" }
-        //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
-    }else{
-        ch_sam = ch_input
-    }
-
-    if(profilers.contains('bowtie')){
-        btIndex = file(params.btIndex)
-        btIndexDir = btIndex.getParent()
-        btIndexName = btIndex.getName()
-        BOWTIE(ch_reads, outputdir, btIndexDir, btIndexName)
-        ch_sam = BOWTIE.out.sam
-        //MAPPED(ALIGN.out.output.collect(), outputdir, bwaIndexName)
-        //ALIGN.out.stdout.view { "ALIGN STDOUT:\n$it" }
-        //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
-    }else{
-        ch_sam = ch_input
-    }
-
     if(profilers.contains('minimap')){
-        // TBD: Add check database
+        // Add check database
         mmIndex = file(params.mmIndex)
         mmIndexDir = mmIndex.getParent()
         mmIndexName = mmIndex.getName()
-        MINIMAP(ch_reads, outputdir, mmIndexDir, mmIndexName)
-        ch_sam = MINIMAP.out.sam
-        MINIMAP.out.stdout.view { "MINIMAP STDOUT:\n$it" }
+        MINIMAP_LR(ch_reads, outputdir, mmIndexDir, mmIndexName)
+        ch_sam = MINIMAP_LR.out.sam
+        //MAPPED(ALIGN.out.output.collect(), outputdir, params.bwaIndexName)
+        MINIMAP_LR.out.stdout.view { "MINIMAP STDOUT:\n$it" }
+        //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
     }else{
         ch_sam = ch_input
-    }
-
-    if(profilers.contains('sam2fastq')){
-        SAM2FASTQ(ch_sam, outputdir)
-        ch_reads = SAM2FASTQ.out.reads
     }
 
     //------ Kraken + Bracken ---------
     if(profilers.contains('kraken2')){
         if(params.krakenMMAP){
-            KRAKEN2(ch_reads, outputdir, DB)
+            KRAKEN2_LR(ch_reads, outputdir, DB)
             // Note, this causes the output folder to be named 'database'. Fix it
         }else{
-            KRAKEN2(ch_reads, outputdir, params.krakenDB)
+            KRAKEN2_LR(ch_reads, outputdir, params.krakenDB)
         }
         //KRAKEN2.out.stdout.view { "KRAKEN2 STDOUT:\n$it" }
     }
 
     if(profilers.contains('bracken')){
         if(profilers.contains('kraken2')){
-            ch_kraken = KRAKEN2.out.output
+            ch_kraken = KRAKEN2_LR.out.output
             //ch_kraken.view()
         }else{
             //ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
@@ -307,19 +267,13 @@ workflow {
                     if (querydirname == folder.name) {
                         pref = file.name //prefix
                         return pref
-                        break
-                    }
+                        break }
                 }
-            }
             //ch_kraken.view()
+            }
         }
         BRACKEN(ch_kraken, outputdir, params.krakenDB)
         //BRACKEN.out.stdout.view { "BRACKEN STDOUT:\n$it" }
-    }
-
-    //------ Centrifuge --------
-    if(profilers.contains('centrifuge')){
-        CENTRIFUGE(ch_reads, outputdir, params.centrifugeDBdir)
     }
 
     //------ Metaphlan3 + Humann3 -------
@@ -328,29 +282,12 @@ workflow {
         METAPHLAN.out.stdout.view()
     }
 
-    if(profilers.contains('humann3')){
-        HUMANN3(ch_reads, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
-        HUMANN3.out.stdout.view()
-    }
-
     //------ Test -------
     if(profilers.contains('test')){
         println "master: $outputdir"
         TEST(ch_reads, outputdir, params.testDatabase)
         TEST.out.stdout.view()
     }
-
-    //------ srst2 -------
-    if(profilers.contains('srst2')){
-        SRST2(ch_reads, outputdir, params.srst2DB)
-    }
-
-    //------ Megares (RGI) ----------
-    if(profilers.contains('rgi')){
-        RGI(ch_reads, outputdir)
-    }
-
-    //------ diamond + megan
 }
 
 //---------- Clean up ------------
@@ -362,6 +299,3 @@ workflow.onComplete {
         cmd2.waitForOrKill(1000*10)
     }
 }
-
-//----------- TODO ------------
-// Add customized log files

@@ -34,9 +34,47 @@ process KRAKEN2 {
         """
     }else{
         """
-        kraken2 $mmap--db $krakenDB --paired --threads ${task.cpus} --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads1 $reads2 --use-mpa-style > /dev/null
+        kraken2 $mmap--db $krakenDB --paired --threads $params.krakenThreads --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads1 $reads2 --use-mpa-style > /dev/null
 
-        kraken2 $mmap--db $krakenDB --paired --threads ${task.cpus} --report ${prefix}.kraken2.report $reads1 $reads2 > /dev/null
+        kraken2 $mmap--db $krakenDB --paired --threads $params.krakenThreads --report ${prefix}.kraken2.report $reads1 $reads2 > /dev/null
+
+        if [ ! ${params.krakenKeepOutput} == "true" ]; then
+            rm ${prefix}.kraken2.out
+        fi
+        #> ${prefix}.kraken2.report
+        #> ${prefix}.kraken2.tax
+        """
+    }
+}
+
+process KRAKEN2_LR {
+    tag "${prefix}"
+    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
+    container 'macadology/kraken'
+
+    input:
+    tuple val(prefix), path(reads)
+    val(procdir)
+    path(krakenDB)
+
+    output:
+    publishDir "$procdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
+    tuple val("${prefix}"), path("${prefix}.kraken2.report"), path("${prefix}.kraken2.tax"), emit: output
+    val("${prefix}"), emit: prefix
+    stdout emit: stdout
+
+    script:
+    def outputdir = file("$procdir/${prefix}/kraken2/${krakenDB.name}")
+    if (outputdir.exists() && !params.overwrite) {
+        println "$outputdir exists. Skipping $prefix ..."
+        """
+        exit 148
+        """
+    }else{
+        """
+        kraken2 $mmap--db $krakenDB --threads ${task.cpus} --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads --use-mpa-style > /dev/null
+
+        kraken2 $mmap--db $krakenDB --threads ${task.cpus} --report ${prefix}.kraken2.report $reads > /dev/null
 
         if [ ! ${params.krakenKeepOutput} == "true" ]; then
             rm ${prefix}.kraken2.out
@@ -64,7 +102,7 @@ process BRACKEN {
     val("${prefix}"), emit: prefix
 
     script:
-    def outputdir = file("$procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.S")
+    def outputdir = file("$procdir/${prefix}/kraken2/${brackenDB.name}/${prefix}.bracken.P")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
