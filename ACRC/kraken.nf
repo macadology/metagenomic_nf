@@ -36,7 +36,7 @@ def helpMessage() {
         nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
 
         # Run program
-        nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken,bracken --database [path to kraken database]
+        nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken2,bracken --database [path to kraken database]
 
     ############################################################################
     """.stripIndent()
@@ -67,6 +67,7 @@ outputdir = params.outputdir
 println ""
 println "querydir : $querydir"
 println "queryglob : $queryglob"
+println "query : $querydir/**/$queryglob"
 println "outputdir : $outputdir"
 println ""
 
@@ -127,6 +128,7 @@ workflow {
         decontIndexDir = decontIndex.getParent()
         decontIndexName = decontIndex.getName()
         DECONT(ch_fastpreads, outputdir, decontIndexDir, decontIndexName)
+        ch_reads = DECONT.out.reads
     }else{
         ch_reads = ch_fastpreads
     }
