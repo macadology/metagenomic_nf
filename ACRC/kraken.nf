@@ -21,6 +21,7 @@ def helpMessage() {
                                 Optional for others.
                                 E.g.: "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
         --outputdir             Path to a folder containing all input fastq.
+        --database              Database directory
         --overwrite             Overwrite existing directories. Otherwise,
                                 skip. Default: false
         --profilers             fastp,decont,kraken,bracken
@@ -32,10 +33,10 @@ def helpMessage() {
 
     Default examples :
         # Show files detected
-        nextflow run metaphlan.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
+        nextflow run kraken.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
 
         # Run program
-        nextflow run metaphlan.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken,bracken
+        nextflow run kraken.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken,bracken --database [path to kraken database]
 
     ############################################################################
     """.stripIndent()
@@ -125,29 +126,20 @@ workflow {
         decontIndexDir = decontIndex.getParent()
         decontIndexName = decontIndex.getName()
         DECONT(ch_fastpreads, outputdir, decontIndexDir, decontIndexName)
-        //ch_reads = DECONT.out.reads
     }else{
         ch_reads = ch_fastpreads
     }
 
     //------ Kraken + Bracken ---------
     if(profilers.contains('kraken2')){
-        if(params.krakenMMAP){
-            KRAKEN2(ch_reads, outputdir, DB)
-            // Note, this causes the output folder to be named 'database'. Fix it
-        }else{
-            KRAKEN2(ch_reads, outputdir, params.krakenDB)
-        }
-        //KRAKEN2.out.stdout.view { "KRAKEN2 STDOUT:\n$it" }
+        KRAKEN2(ch_reads, outputdir, params.krakenDB)
     }
 
     if(profilers.contains('bracken')){
         if(profilers.contains('kraken2')){
             ch_kraken = KRAKEN2.out.output
-            //ch_kraken.view()
         }else{
-            //ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
-            dbname = file(params.krakenDB).name
+            dbname = file(params.database).name
             ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/$dbname/*.{kraken2.report,kraken2.tax}",flat: true, size: 2, checkIfExists: true) { file ->
                 for(int i = 0; i < 3 ; i++) {
                     file = file.getParent()
@@ -160,9 +152,8 @@ workflow {
                     }
                 }
             }
-            //ch_kraken.view()
         }
-        BRACKEN(ch_kraken, outputdir, params.krakenDB)
-        //BRACKEN.out.stdout.view { "BRACKEN STDOUT:\n$it" }
+        BRACKEN(ch_kraken, outputdir, params.database)
+
     }
 }
