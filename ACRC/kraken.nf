@@ -73,6 +73,7 @@ println ""
 //============= Parse profilers ===========
 Set profilers_expected = ['fastp', 'decont', 'kraken2', 'bracken']
 Set profilers = []
+params.profilers = ""
 if(params.profilers.getClass() != Boolean){
   Set profilers_input = params.profilers.split(',')
   Set profiler_diff = profilers_input - profilers_expected
