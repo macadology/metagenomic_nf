@@ -11,7 +11,7 @@ process FASTP {
 
     output:
     publishDir "$procdir/${prefix}/fastp", mode: 'copy'
-    tuple prefix, path("fastp_$reads1"), path("fastp_$reads2"), emit: reads
+    tuple val(prefix), path("fastp_$reads1"), path("fastp_$reads2"), emit: reads
     tuple file("fastp_${prefix}.HTML"), file("fastp_${prefix}.json"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout

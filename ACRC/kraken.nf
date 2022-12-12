@@ -33,10 +33,10 @@ def helpMessage() {
 
     Default examples :
         # Show files detected
-        nextflow run kraken.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
+        nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
 
         # Run program
-        nextflow run kraken.nf -profile acrc --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken,bracken --database [path to kraken database]
+        nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken,bracken --database [path to kraken database]
 
     ############################################################################
     """.stripIndent()
