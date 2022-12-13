@@ -67,11 +67,17 @@ if(params.queryglob){
 querydir = params.querydir
 outputdir = params.outputdir
 
+if(!params.database) {
+  // Set default database
+  params.database = params.krakenDB
+}
+
 println ""
 println "querydir : $querydir"
 println "queryglob : $queryglob"
 println "query : $querydir/**/$queryglob"
 println "outputdir : $outputdir"
+println "database: $params.database"
 println ""
 
 //============= Parse profilers ===========
@@ -158,7 +164,7 @@ workflow {
                     }
                 }
             }
-            ch_kraken.view()
+            //ch_kraken.view()
         }
         BRACKEN(ch_kraken, outputdir, params.database)
 
