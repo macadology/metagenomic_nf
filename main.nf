@@ -299,7 +299,7 @@ workflow {
         }else{
             //ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
             dbname = file(params.krakenDB).name
-            ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/$dbname/*.{kraken2.report,kraken2.tax}",flat: true, size: 2, checkIfExists: true) { file ->
+            ch_kraken = Channel.fromFilePairs("$querydir/**/kraken2/$dbname/*.{kraken2.report,kraken2.tax}",flat: true, size: 2, checkIfExists: true) { file ->
                 for(int i = 0; i < 3 ; i++) {
                     file = file.getParent()
                     folder = file.getParent()

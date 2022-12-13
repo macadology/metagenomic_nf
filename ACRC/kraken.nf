@@ -7,11 +7,11 @@ params.help = false
 def helpMessage() {
     log.info"""
     ############################################################################
-    ACRC metaphlan nextflow pipeline
+    ACRC kraken nextflow pipeline
     ----------------------------------------------------------------------------
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow run metaphlan.nf -profile acrc
+    nextflow run kraken.nf
 
     Main input arguments:
         --querydir              Path to a folder containing all input fastq.
@@ -31,12 +31,15 @@ def helpMessage() {
     Look for editable params in nextflow.config, conf/*.conf and local.config where appropriate. Change the parameters either via the command line
     (e.g. --krakenDB), or by editing the config files.
 
+    Decont:
+    Removes human reads by mapping reads to GRCh38_latest_genomic.fna.gz and filtering out aligned reads.
+
     Default examples :
         # Show files detected
         nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
 
-        # Run program
-        nextflow run kraken.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken2,bracken --database [path to kraken database]
+        # Run pipeline
+        nextflow run kraken.nf -w [work directory] --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken2,bracken --database [path to kraken database]
 
     ############################################################################
     """.stripIndent()
@@ -143,7 +146,7 @@ workflow {
             ch_kraken = KRAKEN2.out.output
         }else{
             dbname = file(params.database).name
-            ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/$dbname/*.{kraken2.report,kraken2.tax}",flat: true, size: 2, checkIfExists: true) { file ->
+            ch_kraken = Channel.fromFilePairs("$querydir/**/kraken2/$dbname/*.{kraken2.report,kraken2.tax}",flat: true, size: 2, checkIfExists: true) { file ->
                 for(int i = 0; i < 3 ; i++) {
                     file = file.getParent()
                     folder = file.getParent()
@@ -158,5 +161,11 @@ workflow {
         }
         BRACKEN(ch_kraken, outputdir, params.database)
 
+    }
+
+    if(profilers.contains('test')){
+        println "master: $outputdir"
+        TEST(ch_reads, outputdir, params.testDatabase)
+        TEST.out.stdout.view()
     }
 }
