@@ -72,7 +72,7 @@ println "outputdir : $outputdir"
 println ""
 
 //============= Parse profilers ===========
-Set profilers_expected = ['fastp', 'decont', 'metaphlan', 'humann']
+Set profilers_expected = ['bowtie', 'decont', 'metaphlan', 'humann']
 Set profilers = []
 params.profilers = ""
 if(params.profilers.getClass() != Boolean){
@@ -89,7 +89,8 @@ println "Running softwares : $profilers"
 //=========== Parameters ===========
 include { FASTP } from '../modules/fastp'
 include { DECONT } from '../modules/decontamination'
-include { METAPHLAN; HUMANN } from '../modules/humann3'
+include { BOWTIE } from '../modules/align'
+include { METAPHLAN; HUMANN3 } from '../modules/humann3'
 
 workflow {
     //------ Get prefix ---------
