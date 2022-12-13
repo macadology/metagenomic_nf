@@ -36,7 +36,7 @@ def helpMessage() {
         nextflow run humann.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory]
 
         # Run program
-        nextflow run humann.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,kraken2,bracken --database [path to kraken database]
+        nextflow run humann.nf --querydir [Directory] --queryglob "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}" --outputdir [Directory] --profilers fastp,decont,humann --database [path to humann database]
 
     ############################################################################
     """.stripIndent()
@@ -134,13 +134,28 @@ workflow {
     }
 
     //------ Metaphlan3 + Humann3 -------
+    if(profilers.contains('bowtie')){
+        if(profilers.contains('metaphlan') && !params.btIndex){
+            params.btIndex = params.humannDB_bt2Chocophlan
+        }
+        btIndex = file(params.btIndex)
+        btIndexDir = btIndex.getParent()
+        btIndexName = btIndex.getName()
+        BOWTIE(ch_reads, outputdir, btIndexDir, btIndexName)
+        ch_sam = BOWTIE.out.sam
+        //MAPPED(ALIGN.out.output.collect(), outputdir, bwaIndexName)
+        //ALIGN.out.stdout.view { "ALIGN STDOUT:\n$it" }
+        //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
+    }else{
+        ch_sam = ch_input
+    }
     if(profilers.contains('metaphlan')){
         METAPHLAN(ch_sam, outputdir, params.metaphlanDB_index, params.metaphlanDB_bt2Chocophlan)
         METAPHLAN.out.stdout.view()
     }
 
     if(profilers.contains('humann')){
-        HUMANN3(ch_reads, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
+        HUMANN3(ch_sam, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
         HUMANN3.out.stdout.view()
     }
 

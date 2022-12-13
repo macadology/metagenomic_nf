@@ -38,16 +38,14 @@ process METAPHLAN {
 
 }
 
-
 process HUMANN3 {
     tag "${prefix}"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
     //errorStrategy { task.exitStatus in 148 ? 'ignore' : 'ignore' }
     // http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz
 
-
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(sam)
     val(procdir)
     val(humannDB_index)
     path(humannDB_Uniref)
@@ -57,8 +55,7 @@ process HUMANN3 {
     output:
     //publishDir "$procdir/${prefix}/humann3", mode: 'copy'
     publishDir "$procdir/${prefix}/humann3", mode: 'move' // Use only if no other processes use humann output files. Great for saving space on ACRC
-    tuple path("${prefix}_*.tsv"), emit: output
-    //, path("${prefix}*_humann_temp/${prefix}*")
+    tuple val(prefix), path("${prefix}_*.tsv"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
@@ -73,11 +70,7 @@ process HUMANN3 {
     }else{
     """
     #exit 148 #For testing purposes, please remove after test.
-    which humann
-    which metaphlan
-    echo ${prefix}
-    cat $reads1 $reads2 > ${prefix}.fq.gz
-    humann --input ${prefix}.fq.gz --output . --threads ${task.cpus} --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $humannDB_index --nproc ${task.cpus}' --bowtie-options '--threads ${task.cpus}' --diamond-options '--threads ${task.cpus}'
+    humann --input ${sam} --output . --threads ${task.cpus} --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $humannDB_index --nproc ${task.cpus}' --bowtie-options '--threads ${task.cpus}' --diamond-options '--threads ${task.cpus}'
     rm ${prefix}.fq.gz
     mv ${prefix}*_humann_temp/${prefix}_bowtie2_aligned.tsv .
     mv ${prefix}*_humann_temp/${prefix}_diamond_aligned.tsv .
