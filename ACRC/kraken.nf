@@ -158,6 +158,7 @@ workflow {
                     }
                 }
             }
+            ch_kraken.view()
         }
         BRACKEN(ch_kraken, outputdir, params.database)
 
