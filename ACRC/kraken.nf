@@ -138,7 +138,7 @@ workflow {
 
     //------ Kraken + Bracken ---------
     if(profilers.contains('kraken2')){
-        KRAKEN2(ch_reads, outputdir, params.krakenDB)
+        KRAKEN2(ch_reads, outputdir, params.database)
     }
 
     if(profilers.contains('bracken')){
