@@ -72,7 +72,7 @@ println "outputdir : $outputdir"
 println ""
 
 //============= Parse profilers ===========
-Set profilers_expected = ['bowtie', 'decont', 'metaphlan', 'humann']
+Set profilers_expected = ['fastp', 'bowtie', 'decont', 'metaphlan', 'humann']
 Set profilers = []
 params.profilers = ""
 if(params.profilers.getClass() != Boolean){
