@@ -137,9 +137,10 @@ workflow {
     //------ Metaphlan3 + Humann3 -------
     if(profilers.contains('bowtie')){
         if(profilers.contains('metaphlan') && !params.btIndex){
-            params.btIndex = params.humannDB_bt2Chocophlan
+            btIndex = file(params.humannDB_bt2Chocophlan)
+        } else {
+            btIndex = file(params.btIndex)
         }
-        btIndex = file(params.btIndex)
         btIndexDir = btIndex.getParent()
         btIndexName = btIndex.getName()
         BOWTIE(ch_reads, outputdir, btIndexDir, btIndexName)
