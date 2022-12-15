@@ -72,10 +72,10 @@ process HUMANN3 {
     #exit 148 #For testing purposes, please remove after test.
     humann --input ${sam} --output . --threads ${task.cpus} --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $humannDB_index --nproc ${task.cpus}' --bowtie-options '--threads ${task.cpus}' --diamond-options '--threads ${task.cpus}'
     #rm ${prefix}.fq.gz
-    mv ${prefix}*_humann_temp/${prefix}_bowtie2_aligned.tsv .
-    mv ${prefix}*_humann_temp/${prefix}_diamond_aligned.tsv .
-    mv ${prefix}*_humann_temp/${prefix}.log .
-    mv ${prefix}*_humann_temp/${prefix}_metaphlan_bugs_list.tsv .
+    mv ${prefix}*_humann_temp/${prefix}*_bowtie2_aligned.tsv .
+    mv ${prefix}*_humann_temp/${prefix}*_diamond_aligned.tsv .
+    mv ${prefix}*_humann_temp/${prefix}*.log .
+    mv ${prefix}*_humann_temp/${prefix}*_metaphlan_bugs_list.tsv .
     rm -r ${prefix}*_humann_temp
     """
     }
