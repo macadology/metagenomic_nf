@@ -137,7 +137,7 @@ workflow {
     //------ Metaphlan3 + Humann3 -------
     if(profilers.contains('bowtie')){
         if((profilers.contains('metaphlan') || profilers.contains('humann')) && !params.btIndex){
-            btIndex = file(params.humannDB_bt2Chocophlan)
+            btIndex = file("${params.humannDB_bt2Chocophlan}/${params.humannDB_index}")
         } else {
             btIndex = file(params.btIndex)
         }
