@@ -136,7 +136,7 @@ workflow {
 
     //------ Metaphlan3 + Humann3 -------
     if(profilers.contains('bowtie')){
-        if(profilers.contains('metaphlan') && !params.btIndex){
+        if((profilers.contains('metaphlan') || profilers.contains('humann')) && !params.btIndex){
             btIndex = file(params.humannDB_bt2Chocophlan)
         } else {
             btIndex = file(params.btIndex)
@@ -151,6 +151,7 @@ workflow {
     }else{
         ch_sam = ch_input
     }
+
     if(profilers.contains('metaphlan')){
         METAPHLAN(ch_sam, outputdir, params.metaphlanDB_index, params.metaphlanDB_bt2Chocophlan)
         METAPHLAN.out.stdout.view()
