@@ -62,7 +62,7 @@ println "database: $params.database"
 println ""
 
 //============= Parse profilers ===========
-Set profilers_expected = ['fastp', 'decont', 'bowtie', 'metaphlan', 'humann']
+Set profilers_expected = ['fastp', 'decont', 'bowtie', 'metaphlan', 'humann3']
 Set profilers = []
 params.profilers = ""
 if(params.profilers.getClass() != Boolean){
