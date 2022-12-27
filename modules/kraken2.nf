@@ -1,5 +1,4 @@
 // run kraken and bracken
-// todo, store database in ram, run all kraken classification first, then run subsequent analysis
 // https://www.researchgate.net/profile/Juan-Jovel/publication/338686214_How_to_run_Kraken_on_metagenomics_FASTQ_files/links/5e24b527a6fdcc1015781691/How-to-run-Kraken-on-metagenomics-FASTQ-files.pdf
 // https://hpc.nih.gov/apps/kraken.html
 // https://github.com/DerrickWood/kraken2/issues/120
@@ -10,44 +9,6 @@ if(params.krakenMMAP){
 }
 
 process KRAKEN2 {
-    tag "${prefix}"
-    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
-    container 'macadology/kraken'
-
-    input:
-    tuple val(prefix), path(reads1), path(reads2)
-    val(procdir)
-    path(krakenDB)
-
-    output:
-    publishDir "$procdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
-    tuple val("${prefix}"), path("${prefix}.kraken2.report"), path("${prefix}.kraken2.tax"), emit: output
-    val("${prefix}"), emit: prefix
-    stdout emit: stdout
-
-    script:
-    def outputdir = file("$procdir/${prefix}/kraken2/${krakenDB.name}")
-    if (outputdir.exists() && !params.overwrite) {
-        println "$outputdir exists. Skipping $prefix ..."
-        """
-        exit 148
-        """
-    }else{
-        """
-        kraken2 $mmap--db $krakenDB --paired --threads $params.krakenThreads --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads1 $reads2 --use-mpa-style > /dev/null
-
-        kraken2 $mmap--db $krakenDB --paired --threads $params.krakenThreads --report ${prefix}.kraken2.report $reads1 $reads2 > /dev/null
-
-        if [ ! ${params.krakenKeepOutput} == "true" ]; then
-            rm ${prefix}.kraken2.out
-        fi
-        #> ${prefix}.kraken2.report
-        #> ${prefix}.kraken2.tax
-        """
-    }
-}
-
-process KRAKEN2_LR {
     tag "${prefix}"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
     container 'macadology/kraken'
@@ -64,6 +25,8 @@ process KRAKEN2_LR {
     stdout emit: stdout
 
     script:
+    // For paired end reads, $paired will add the --paired option and $reads will expand automatically.
+    def paired = (reads.size()==2) ? "--paired " : ""
     def outputdir = file("$procdir/${prefix}/kraken2/${krakenDB.name}")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
@@ -72,15 +35,13 @@ process KRAKEN2_LR {
         """
     }else{
         """
-        kraken2 $mmap--db $krakenDB --threads ${task.cpus} --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads --use-mpa-style > /dev/null
+        kraken2 $mmap--db $krakenDB $paired--threads $params.krakenThreads --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads --use-mpa-style > /dev/null
 
-        kraken2 $mmap--db $krakenDB --threads ${task.cpus} --report ${prefix}.kraken2.report $reads > /dev/null
+        kraken2 $mmap--db $krakenDB $paired--threads $params.krakenThreads --report ${prefix}.kraken2.report $reads > /dev/null
 
         if [ ! ${params.krakenKeepOutput} == "true" ]; then
             rm ${prefix}.kraken2.out
         fi
-        #> ${prefix}.kraken2.report
-        #> ${prefix}.kraken2.tax
         """
     }
 }

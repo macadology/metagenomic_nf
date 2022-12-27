@@ -6,7 +6,7 @@ process BWA {
     //container 'macadology/bwa'
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
     path(bwaIndexDir)
     val(bwaIndexName)
@@ -28,7 +28,7 @@ process BWA {
         """
     }else{
         """
-        bwa mem -t ${task.cpus} ${bwaIndexDir}/${bwaIndexName} $reads1 $reads2 | \\
+        bwa mem -t ${task.cpus} ${bwaIndexDir}/${bwaIndexName} $reads | \\
         samtools view $params.samtoolsOptions - > "${outputdir}/${prefix}.${bwaIndexName}.sam"
         """
     }
@@ -42,7 +42,7 @@ process BOWTIE {
     //container 'macadology/bwa'
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
     path(btIndexDir)
     val(btIndexName)
@@ -56,6 +56,8 @@ process BOWTIE {
 
     script:
     //String indexname = "${btIndex.baseName}_${bwaIndex.extension}"
+    reads1 = reads[0]
+    reads2 = reads[1]
     def outputdir = file("$procdir/${prefix}/bowtie")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
@@ -76,7 +78,7 @@ process MINIMAP {
     //container 'macadology/bwa'
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
     path(mmIndexDir)
     val(mmIndexName)
@@ -97,40 +99,7 @@ process MINIMAP {
         """
     }else{
         """
-        minimap2 -t ${task.cpus} -ax sr ${mmIndexDir}/${mmIndexName} ${reads1} ${reads2} > ${prefix}.${mmIndexName}.sam
-        """
-    }
-}
-
-process MINIMAP_LR {
-    // Align reads to target genome and count number of mapped reads
-    tag "${prefix}"
-    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
-    //container 'macadology/bwa'
-
-    input:
-    tuple val(prefix), path(read)
-    val(procdir)
-    path(mmIndexDir)
-    val(mmIndexName)
-
-    output:
-    publishDir "$procdir/${prefix}/minimap2", mode: 'copy'
-    tuple val(prefix), path("${prefix}.${mmIndexName}.sam"), emit: sam
-    path "${prefix}.${mmIndexName}.sam", emit: output
-    val("${prefix}"), emit: prefix
-    stdout emit: stdout
-
-    script:
-    def outputdir = file("$procdir/${prefix}/minimap")
-    if (outputdir.exists() && !params.overwrite) {
-        println "$outputdir exists. Skipping $prefix ..."
-        """
-        exit 148
-        """
-    }else{
-        """
-        minimap2 -t ${task.cpus} -ax ${params.mmreadtype} ${mmIndexDir}/${mmIndexName} ${read} > ${prefix}.${mmIndexName}.sam
+        minimap2 -t ${task.cpus} -ax sr ${mmIndexDir}/${mmIndexName} $reads > ${prefix}.${mmIndexName}.sam
         """
     }
 }
@@ -138,6 +107,7 @@ process MINIMAP_LR {
 process SAM2FASTQ {
     // Convert sam file to fastq files. Choose reads that align to ref.
     // 5th Dec 2022. Sam file requires header. Current code not working...
+    // Only works for paired end reads for now....
     // Test if metaphlan works with sam file with header!
     tag "${prefix}"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
@@ -193,7 +163,3 @@ process MAPPED {
         }.mappedreads.csv; done
     """
 }
-
-// PREFIX=TR
-//for i in $(find . -type f -name "*.$PREFIX.fasta.txt"); do echo $(basename $(dirname $(dirname $i))) $(head $i) >> ~/GIS/food_fermentation/reports/$PREFIX.fasta.mappedreads.csv; done
-//for i in $(find . -type f -name "*.AH.fasta.txt"); do echo $(head $i); done

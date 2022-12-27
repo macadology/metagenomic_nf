@@ -6,7 +6,7 @@ process FASTP {
     tag "${prefix}"
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
 
     output:
@@ -17,7 +17,7 @@ process FASTP {
     stdout emit: stdout
 
     script:
-    def outputdir = file("$procdir${prefix}/fastp")
+    def outputdir = file("$procdir/${prefix}/fastp")
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping $prefix ..."
         """
@@ -25,13 +25,16 @@ process FASTP {
         """
     }else{
         println "Executing fastp on $prefix ..."
-        """
-        fastp -q 25 -p 20 -i $reads1 -I $reads2 -o fastp_$reads1 -O fastp_$reads2 -j fastp_${prefix}.json -h fastp_${prefix}.HTML
-        """
+        if (reads.size()==2) {
+            reads1 = reads[0]
+            reads2 = reads[1]
+            """
+            fastp -q 25 -p 20 -i $reads1 -I $reads2 -o fastp_$reads1 -O fastp_$reads2 -j fastp_${prefix}.json -h fastp_${prefix}.HTML
+            """
+        } else (reads.size()==1) {
+            """
+            fastp -q 25 -p 20 -i $reads -o fastp_$reads1 -O fastp_$reads2 -j fastp_${prefix}.json -h fastp_${prefix}.HTML
+            """
+        }
     }
-    // > fastp_$reads1
-    // > fastp_$reads2
-    // > fastp_${prefix}.json
-    // > fastp_${prefix}.HTML
-
 }

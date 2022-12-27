@@ -6,7 +6,7 @@ process RGI {
     //container 'macadology/rgi'
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
 
     output:
@@ -23,6 +23,8 @@ process RGI {
         exit 148
         """
     }else{
+        reads1 = reads[0]
+        reads2 = reads[1]
         """
         which rgi
         rgi bwt -1 $reads1 -2 $reads2 -a bwa -n ${task.cpus} -o ${prefix}

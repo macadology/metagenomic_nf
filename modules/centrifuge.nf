@@ -7,7 +7,7 @@ process CENTRIFUGE {
     //container 'macadology/centrifuge'
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
     val(centrifugeDBdir)
 
@@ -25,9 +25,18 @@ process CENTRIFUGE {
         exit 148
         """
     }else{
+        if (reads.size()==2) {
+            reads1 = reads[0]
+            reads2 = reads[1]
+            """
+            centrifuge -x $centrifugeDBdir/$params.centrifugeDBname -1 $reads1 -2 $reads2 -t -p ${task.cpus} -S ${prefix}.centrifuge.classification.out --report-file ${prefix}.centrifuge.summary.tsv
+            """
+        } else {
+            """
+            centrifuge -x $centrifugeDBdir/$params.centrifugeDBname $reads -t -p ${task.cpus} -S ${prefix}.centrifuge.classification.out --report-file ${prefix}.centrifuge.summary.tsv
+            """
+        }
         """
-        centrifuge -x $centrifugeDBdir/$params.centrifugeDBname -1 $reads1 -2 $reads2 -t -p ${task.cpus} -S ${prefix}.centrifuge.classification.out --report-file ${prefix}.centrifuge.summary.tsv
-
         centrifuge-kreport -x $centrifugeDBdir/$params.centrifugeDBname ${prefix}.centrifuge.classification.out > ${prefix}.centrifuge.kreport
 
         tar -zcvf ${prefix}.centrifuge.classification.out.tar.gz ${prefix}.centrifuge.classification.out
@@ -36,7 +45,3 @@ process CENTRIFUGE {
         """
     }
 }
-
-// > ${prefix}.centrifuge.summary.tsv
-// > ${prefix}.centrifuge.kreport
-// > ${prefix}.centrifuge.classification.out.tar.gz

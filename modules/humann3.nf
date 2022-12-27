@@ -6,7 +6,7 @@ process METAPHLAN {
     // http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz
 
     input:
-    tuple val(prefix), path(sam)
+    tuple val(prefix), path(reads)
     val(procdir)
     val(metaphlanDB_index)
     path(metaphlanDB_bt2Chocophlan)
@@ -20,22 +20,28 @@ process METAPHLAN {
     script:
     // Note, existence check doesn't seem to work for aws right now...
     def outputdir = file("$procdir/${prefix}/metaphlan")
+    //====================== Check sam vs fastq input ========================
     if (outputdir.exists() && !params.overwrite) {
         println "$outputdir exists. Skipping ${prefix} ..."
         """
         exit 148
         """
     }else{
-    """
-    #exit 148 #For testing purposes, please remove after test.
-    #which humann
-    #which metaphlan
-    #echo ${prefix}
-
-    metaphlan ${sam} --bowtie2db $metaphlanDB_bt2Chocophlan --index $metaphlanDB_index --input_type sam --nproc ${task.cpus} --min_alignment_len 100 -o ${prefix}_metaphlan_bugs_list.tsv
-    """
+        if (reads.size()==1) {
+            // If input is a sam file or single ended read
+            ext = (reads[0].getExtension()=="sam") ? "sam" : "fastq"
+            """
+            metaphlan ${reads} --bowtie2db $metaphlanDB_bt2Chocophlan --index $metaphlanDB_index --input_type $ext --nproc ${task.cpus} --min_alignment_len 100 -o ${prefix}_metaphlan_bugs_list.tsv
+            """
+        }else if (reads.size()==2) {
+            // If onput is a paired end read
+            """
+            cat $reads > ${prefix}.fq.gz
+            metaphlan ${prefix}.fq.gz --bowtie2db $metaphlanDB_bt2Chocophlan --index $metaphlanDB_index --input_type fastq --nproc ${task.cpus} --min_alignment_len 100 -o ${prefix}_metaphlan_bugs_list.tsv
+            rm ${prefix}.fq.gz
+            """
+        }
     }
-
 }
 
 process HUMANN3 {
@@ -45,7 +51,7 @@ process HUMANN3 {
     // http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz
 
     input:
-    tuple val(prefix), path(sam)
+    tuple val(prefix), path(reads)
     val(procdir)
     val(humannDB_index)
     path(humannDB_Uniref)
@@ -68,16 +74,17 @@ process HUMANN3 {
         exit 148
         """
     }else{
-    """
-    #exit 148 #For testing purposes, please remove after test.
-    humann --input ${sam} --output . --threads ${task.cpus} --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $humannDB_index --nproc ${task.cpus}' --bowtie-options '--threads ${task.cpus}' --diamond-options '--threads ${task.cpus}'
-    #rm ${prefix}.fq.gz
-    mv ${prefix}*_humann_temp/${prefix}*_bowtie2_aligned.tsv .
-    mv ${prefix}*_humann_temp/${prefix}*_diamond_aligned.tsv .
-    mv ${prefix}*_humann_temp/${prefix}*.log .
-    mv ${prefix}*_humann_temp/${prefix}*_metaphlan_bugs_list.tsv .
-    rm -r ${prefix}*_humann_temp
-    """
+        //$reads can be single-ended or paired-end. THe variable will expand automatically.
+        """
+        cat $reads > ${prefix}.fq.gz
+        humann --input ${prefix}.fq.gz --output . --threads ${task.cpus} --protein-database $humannDB_Uniref --nucleotide-database $humannDB_Chocophlan --metaphlan-options '--bowtie2db $humannDB_bt2Chocophlan --index $humannDB_index --nproc ${task.cpus}' --bowtie-options '--threads ${task.cpus}' --diamond-options '--threads ${task.cpus}'
+        rm ${prefix}.fq.gz
+        mv ${prefix}*_humann_temp/${prefix}*_bowtie2_aligned.tsv .
+        mv ${prefix}*_humann_temp/${prefix}*_diamond_aligned.tsv .
+        mv ${prefix}*_humann_temp/${prefix}*.log .
+        mv ${prefix}*_humann_temp/${prefix}*_metaphlan_bugs_list.tsv .
+        rm -r ${prefix}*_humann_temp
+        """
     }
 
 }

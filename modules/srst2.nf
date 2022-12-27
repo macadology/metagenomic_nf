@@ -5,7 +5,7 @@ process SRST2 {
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
 
     input:
-    tuple val(prefix), path(reads1), path(reads2)
+    tuple val(prefix), path(reads)
     val(procdir)
     path(srst2DB)
 
@@ -24,7 +24,7 @@ process SRST2 {
         """
     }else{
         """
-        srst2 --input_pe $reads1 $reads2 --output $prefix --log --gene_db $srst2DB --threads ${task.cpus}
+        srst2 --input_pe $reads --output $prefix --log --gene_db $srst2DB --threads ${task.cpus}
         """
     }
 }

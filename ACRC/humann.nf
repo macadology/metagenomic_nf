@@ -72,7 +72,7 @@ println "outputdir : $outputdir"
 println ""
 
 //============= Parse profilers ===========
-Set profilers_expected = ['fastp', 'bowtie', 'decont', 'metaphlan', 'humann']
+Set profilers_expected = ['fastp', 'decont', 'bowtie', 'metaphlan', 'humann']
 Set profilers = []
 params.profilers = ""
 if(params.profilers.getClass() != Boolean){
@@ -96,7 +96,7 @@ workflow {
     //------ Get prefix ---------
     // Closure after Channel.fromFilePairs() is used to parse the prefix
     querydirname = file(querydir).name
-    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: true, size:params.size, maxDepth: params.maxdepth) { file ->
+    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: false, size:params.size, maxDepth: params.maxdepth) { file ->
         for(int i = 0; i < 3 ; i++) {
             file = file.getParent()
             folder = file.getParent()
@@ -136,7 +136,7 @@ workflow {
 
     //------ Metaphlan3 + Humann3 -------
     if(profilers.contains('bowtie')){
-        if((profilers.contains('metaphlan') || profilers.contains('humann')) && !params.btIndex){
+        if(profilers.contains('metaphlan' && !params.btIndex){
             btIndex = file("${params.humannDB_bt2Chocophlan}/${params.humannDB_index}")
         } else {
             btIndex = file(params.btIndex)
@@ -145,9 +145,6 @@ workflow {
         btIndexName = btIndex.getName()
         BOWTIE(ch_reads, outputdir, btIndexDir, btIndexName)
         ch_sam = BOWTIE.out.sam
-        //MAPPED(ALIGN.out.output.collect(), outputdir, bwaIndexName)
-        //ALIGN.out.stdout.view { "ALIGN STDOUT:\n$it" }
-        //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
     }else{
         ch_sam = ch_input
     }
@@ -157,14 +154,14 @@ workflow {
         METAPHLAN.out.stdout.view()
     }
 
-    if(profilers.contains('humann')){
-        HUMANN3(ch_sam, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
+    if(profilers.contains('humann3')){
+        HUMANN3(ch_reads, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
         HUMANN3.out.stdout.view()
     }
 
-    if(profilers.contains('test')){
-        println "master: $outputdir"
-        TEST(ch_reads, outputdir, params.testDatabase)
-        TEST.out.stdout.view()
-    }
+    // if(profilers.contains('test')){
+    //     println "master: $outputdir"
+    //     TEST(ch_reads, outputdir, params.testDatabase)
+    //     TEST.out.stdout.view()
+    // }
 }

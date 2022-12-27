@@ -60,85 +60,19 @@ if (params.help){
     exit 0
 }
 
-//=========== Input/Output ===========
-// Assumes a particular folder structure. See README.md for more information
-// Possible inputs --> (raw) raw reads, (fastp) fastp reads, (decont) human decontaminated fastp reads (custom) custom reads
-// Define (querydir) Directory containing reads and (queryglob) Read file format 
+//=========== Load functions ============
+// GroovyShell shell = new GroovyShell()
+// def funcs = shell.parse(new File('./extra/functions.gvy'))
+// (querydir, queryglob, outputdir) = funcs.parseio(params)
 
-if(params.general){
-    //Checks if local.config is a placeholder or specific to project.
-    if(params.outputdir == "" || params.querydir == ""){
-        log.error "Error: You are running in general mode. Please specify a query (--querydir) and output (--outputdir) directory"
-        exit 0
-    }
-    //------ queryglob, querydir, outputdir
-    if(params.queryglob){
-        queryglob = params.queryglob
-    }else{
-        queryglob = "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
-    }
-    querydir = params.querydir
-    outputdir = params.outputdir
-}else{
-    //------ Default queryglob from local.config
-    if(params.default_queryglob){
-        default_queryglob = params.default_queryglob
-    }else{
-        default_queryglob = "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
-    }
-    //------ querydir and queryglob
-    if(params.querydir && params.queryglob){
-        querydir = params.querydir
-        queryglob = params.queryglob
-    } else if(params.querydir && !params.queryglob) {
-        querydir = params.querydir
-        queryglob = "$default_queryglob"
-    } else {
-        switch(params.readtype) {
-             // Case statement defined for 4 cases
-             // Each case statement section has a break condition to exit the loop
-             case "raw":
-                querydir = params.rawdir
-                if(params.queryglob){
-                    queryglob = params.queryglob
-                }else{
-                    queryglob = "$default_queryglob"
-                }
-                break;
-             case "fastp":
-                querydir = params.procdir
-                if(params.queryglob){
-                    queryglob = params.queryglob
-                }else{
-                    queryglob = "fastp_$default_queryglob"
-                }
-                break;
-             case "decont":
-                querydir = params.procdir
-                if(params.queryglob){
-                    queryglob = params.queryglob
-                }else{
-                    queryglob = "decont_$default_queryglob"
-                }
-                break;
-             default:
-                //fastp
-                querydir = params.procdir
-                queryglob = "fastp_$default_queryglob"
-                break;
-          }
-      //---------  outputdir
-      if(params.outputdir == ""){
-          outputdir = file(params.procdir)
-      } else {
-          outputdir = file(params.outputdir)
-      }
-  }
-}
+evaluate(new File("./extra/parseio.gvy"))
+
 println ""
 println "querydir : $querydir"
 println "queryglob : $queryglob"
+println "query : $querydir/**/$queryglob"
 println "outputdir : $outputdir"
+println "database: $params.database"
 println ""
 
 //============= Parse profilers ===========
@@ -193,13 +127,12 @@ if(params.krakenMMAP && profilers.contains('kraken2')){
     cmd.waitForOrKill(1000*60*10) //Wait 10 min before initiating the other steps
 }
 
+
 //---------- Main workflow ------------
 workflow {
-    //------ Get prefix ---------
-    //// Closure after Channel.fromFilePairs() is used to parse the prefix
-    //println "$querydir/**/$queryglob"
-    querydirname = file(querydir).name
-    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: true, size:params.size, maxDepth: params.maxdepth) { file ->
+    //------ Get prefix and files ---------
+    querydirname = new File(querydir).name
+    ch_input = Channel.fromFilePairs("$querydir/**/$queryglob", flat: false, size:params.size, maxDepth: params.maxdepth) { file ->
         for(int i = 0; i < 3 ; i++) {
             file = file.getParent()
             folder = file.getParent()
@@ -335,7 +268,8 @@ workflow {
 
     //------ Test -------
     if(profilers.contains('test')){
-        println "master: $outputdir"
+        //ch_reads.view()
+        println "testDatabase: $params.testDatabase"
         TEST(ch_reads, outputdir, params.testDatabase)
         TEST.out.stdout.view()
     }
