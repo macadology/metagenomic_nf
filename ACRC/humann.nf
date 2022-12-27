@@ -46,29 +46,19 @@ if (params.help){
     exit 0
 }
 
-//=========== Input/Output ===========
-// Assumes a particular folder structure. See README.md for more information
-// Define (querydir) Directory containing reads and (queryglob) Read file format 
+//=========== Load functions ============
+// GroovyShell shell = new GroovyShell()
+// def funcs = shell.parse(new File('./extra/functions.gvy'))
+// (querydir, queryglob, outputdir) = funcs.parseio(params)
 
-//------ queryglob, querydir, outputdir
-if(params.outputdir == "" || params.querydir == ""){
-    log.error "Error: You are running in general mode. Please specify a query (--querydir) and output (--outputdir) directory"
-    exit 0
-}
-
-if(params.queryglob){
-    queryglob = params.queryglob
-}else{
-    queryglob = "*_{1,2}*{fastq,fastq.gz,fq,fq.gz}"
-}
-querydir = params.querydir
-outputdir = params.outputdir
+evaluate(new File("../extra/parseio.gvy"))
 
 println ""
 println "querydir : $querydir"
 println "queryglob : $queryglob"
 println "query : $querydir/**/$queryglob"
 println "outputdir : $outputdir"
+println "database: $params.database"
 println ""
 
 //============= Parse profilers ===========

@@ -54,7 +54,7 @@ if (params.help){
 // def funcs = shell.parse(new File('./extra/functions.gvy'))
 // (querydir, queryglob, outputdir) = funcs.parseio(params)
 
-evaluate(new File("./extra/parseio.gvy"))
+evaluate(new File("../extra/parseio.gvy"))
 
 println ""
 println "querydir : $querydir"
