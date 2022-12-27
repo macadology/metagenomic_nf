@@ -140,7 +140,7 @@ workflow {
     }
 
     if(profilers.contains('metaphlan')){
-        METAPHLAN(ch_sam, outputdir, params.metaphlanDB_index, params.metaphlanDB_bt2Chocophlan)
+        METAPHLAN(ch_sam, outputdir, params.humannDB_index, params.humannDB_bt2Chocophlan)
         METAPHLAN.out.stdout.view()
     }
 
