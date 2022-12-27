@@ -25,8 +25,6 @@ process DECONT {
         reads2 = reads[1]
         decontread1 = new File("$params.procdir/${prefix}/fastp/decont_${decontIndexName}_$reads1")
         decontread2 = new File("$params.procdir/${prefix}/fastp/decont_${decontIndexName}_$reads2")
-        println reads1
-        println reads2
 
         if (decontread1.exists() && decontread2.exists() && !params.overwrite) {
             println "$decontread1 and $decontread2 exists. Skipping $prefix ..."
