@@ -141,6 +141,7 @@ process TEST {
     queue 'express'
     time '1hour'
     maxForks 3
+    scratch "$HOME/scratch/temp"
     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
 
     input:
@@ -157,6 +158,7 @@ process TEST {
     echo "Executing test on ${prefix}"
     cat ${reads} > ${prefix}.txt
     echo "haha" > ${prefix}_haha.txt
+    sleep 10
     """
 }
 
@@ -188,6 +190,7 @@ workflow {
         ch_staged = STAGEIN.out
         HUMANN3(ch_staged, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
         HUMANN3.out.stdout.view()
+        //TEST(ch_staged)
         STAGEIN.output
             .join(HUMANN3.out.output, by: [0])
             .flatten()
