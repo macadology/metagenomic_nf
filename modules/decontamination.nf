@@ -14,7 +14,7 @@ process DECONT {
     output:
     publishDir "$procdir/${prefix}/fastp", mode: 'copy'
     tuple val(prefix), path("decont_*"), emit: reads
-    path("aln-se_${prefix}.sam")
+    //path("aln-se_${prefix}.sam")
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 

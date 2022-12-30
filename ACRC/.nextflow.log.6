@@ -1,0 +1,202 @@
+Dec-29 23:45:36.392 [main] DEBUG nextflow.cli.Launcher - $> nextflow run humann_staging.nf -w /home/users/astar/gis/teojyj/scratch/test --querydir /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed --queryglob 'fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}' --outputdir ~/DATA/projects/csb5-test-reads/data/processed --profilers humann3
+Dec-29 23:45:36.526 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 21.10.6
+Dec-29 23:45:36.550 [main] INFO  nextflow.cli.CmdRun - Launching `humann_staging.nf` [spontaneous_bernard] - revision: ce597add18
+Dec-29 23:45:36.563 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/nextflow.config
+Dec-29 23:45:36.564 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/nextflow.config
+Dec-29 23:45:36.585 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Dec-29 23:45:37.552 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; plugins-dir=/home/users/astar/gis/teojyj/.nextflow/plugins
+Dec-29 23:45:37.553 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Dec-29 23:45:37.563 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Dec-29 23:45:37.564 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Dec-29 23:45:37.567 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Dec-29 23:45:37.576 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Dec-29 23:45:37.621 [main] DEBUG nextflow.Session - Session uuid: fb89d38f-7887-4d53-8649-17f640b0ce54
+Dec-29 23:45:37.621 [main] DEBUG nextflow.Session - Run name: spontaneous_bernard
+Dec-29 23:45:37.622 [main] DEBUG nextflow.Session - Executor pool size: 48
+Dec-29 23:45:37.635 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 21.10.6 build 5660
+  Created: 21-12-2021 16:55 UTC (22-12-2021 00:55 SGST)
+  System: Linux 4.18.0-147.el8.x86_64
+  Runtime: Groovy 3.0.9 on OpenJDK 64-Bit Server VM 1.8.0_282-b08
+  Encoding: UTF-8 (ANSI_X3.4-1968)
+  Process: 1785905@hpc-login01 [172.16.20.120]
+  CPUs: 48 - Mem: 186.9 GB (9.1 GB) - Swap: 100 GB (94.6 GB)
+Dec-29 23:45:37.651 [main] DEBUG nextflow.Session - Work-dir: /home/users/astar/gis/teojyj/scratch/test [gpfs]
+Dec-29 23:45:37.652 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/bin
+Dec-29 23:45:37.659 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Dec-29 23:45:37.669 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Dec-29 23:45:37.714 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 49; maxThreads: 1000
+Dec-29 23:45:37.905 [main] DEBUG nextflow.Session - Session start invoked
+Dec-29 23:45:38.548 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Dec-29 23:45:38.597 [main] INFO  nextflow.script.BaseScript - 
+Dec-29 23:45:38.598 [main] INFO  nextflow.script.BaseScript - querydir : /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed
+Dec-29 23:45:38.598 [main] INFO  nextflow.script.BaseScript - queryglob : fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}
+Dec-29 23:45:38.598 [main] INFO  nextflow.script.BaseScript - query : /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed/**/fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}
+Dec-29 23:45:38.598 [main] INFO  nextflow.script.BaseScript - outputdir : ~/DATA/projects/csb5-test-reads/data/processed
+Dec-29 23:45:38.599 [main] WARN  nextflow.script.ScriptBinding - Access to undefined parameter `database` -- Initialise it to a default value eg. `params.database = some_value`
+Dec-29 23:45:38.600 [main] INFO  nextflow.script.BaseScript - database: null
+Dec-29 23:45:38.600 [main] INFO  nextflow.script.BaseScript - 
+Dec-29 23:45:38.604 [main] INFO  nextflow.script.BaseScript - Running softwares : [humann3]
+Dec-29 23:45:38.826 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 49; maxThreads: 1000
+Dec-29 23:45:38.914 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Dec-29 23:45:38.914 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-29 23:45:38.918 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Dec-29 23:45:38.922 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=48; memory=186.9 GB; capacity=3; pollInterval=100ms; dumpInterval=5m
+Dec-29 23:45:38.925 [main] DEBUG n.processor.TaskPollingMonitor - Creating submit rate limit of 1 reqs by 10 seconds
+Dec-29 23:45:38.993 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:HUMANN3` matches process HUMANN3
+Dec-29 23:45:38.994 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Dec-29 23:45:38.995 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Dec-29 23:45:38.999 [main] DEBUG nextflow.executor.Executor - [warm up] executor > slurm
+Dec-29 23:45:39.000 [main] DEBUG n.processor.TaskPollingMonitor - Creating task monitor for executor 'slurm' > capacity: 3; pollInterval: 5s; dumpInterval: 5m 
+Dec-29 23:45:39.001 [main] DEBUG n.executor.AbstractGridExecutor - Creating executor 'slurm' > queue-stat-interval: 1m
+Dec-29 23:45:39.097 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-29 23:45:39.097 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-29 23:45:39.113 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: STAGEIN, TEST, CLEANFILES, HUMANN3, METAPHLAN
+Dec-29 23:45:39.121 [main] WARN  nextflow.Session - There's no process matching config selector: BWA
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: BOWTIE
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: MAPPED
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: FASTP
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: DECONT
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: KRAKEN2
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: BRACKEN
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: SRST2
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: RGI
+Dec-29 23:45:39.128 [main] WARN  nextflow.Session - There's no process matching config selector: CENTRIFUGE
+Dec-29 23:45:39.129 [main] DEBUG nextflow.Session - Ignite dataflow network (4)
+Dec-29 23:45:39.134 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed/; pattern: **/fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}; options: [maxDepth:2]
+Dec-29 23:45:39.135 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > STAGEIN
+Dec-29 23:45:39.135 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > HUMANN3
+Dec-29 23:45:39.135 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > CLEANFILES
+Dec-29 23:45:39.135 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Dec-29 23:45:39.135 [main] DEBUG nextflow.Session - Session await
+Dec-29 23:45:39.279 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:45:39.340 [Task submitter] INFO  nextflow.Session - [8f/02acc9] Submitted process > STAGEIN (1)
+Dec-29 23:45:39.434 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: STAGEIN (1); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/8f/02acc9cd6517d82c2df4248a79387a]
+Dec-29 23:45:39.731 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM004) > jobId: 501895; workDir: /home/users/astar/gis/teojyj/scratch/test/32/f996d336a6131b214f6729aeb05cbf
+Dec-29 23:45:39.732 [Task submitter] INFO  nextflow.Session - [32/f996d3] Submitted process > HUMANN3 (WEM004)
+Dec-29 23:45:48.933 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:45:48.933 [Task submitter] INFO  nextflow.Session - [06/766181] Submitted process > STAGEIN (3)
+Dec-29 23:45:48.965 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: STAGEIN (3); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/06/76618168aee16116106f60f8d5d301]
+Dec-29 23:45:49.285 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM002) > jobId: 501899; workDir: /home/users/astar/gis/teojyj/scratch/test/da/f3917867733aae50a24b56f262a1f1
+Dec-29 23:45:49.285 [Task submitter] INFO  nextflow.Session - [da/f39178] Submitted process > HUMANN3 (WEM002)
+Dec-29 23:45:58.931 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:45:58.932 [Task submitter] INFO  nextflow.Session - [34/57f9fb] Submitted process > STAGEIN (2)
+Dec-29 23:45:59.679 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: STAGEIN (2); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/34/57f9fb0fd12458c23cc17773b34838]
+Dec-29 23:45:59.839 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WHS328) > jobId: 501900; workDir: /home/users/astar/gis/teojyj/scratch/test/66/ad8ee6600d9056fc2182fb4ddf5c22
+Dec-29 23:45:59.840 [Task submitter] INFO  nextflow.Session - [66/ad8ee6] Submitted process > HUMANN3 (WHS328)
+Dec-29 23:46:08.931 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:46:08.932 [Task submitter] INFO  nextflow.Session - [e3/1768cc] Submitted process > STAGEIN (5)
+Dec-29 23:46:08.962 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 5; name: STAGEIN (5); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/e3/1768ccfc5d53c293a1ed0218a6c5b3]
+Dec-29 23:46:18.932 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:46:18.932 [Task submitter] INFO  nextflow.Session - [e2/279518] Submitted process > STAGEIN (4)
+Dec-29 23:46:18.963 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 4; name: STAGEIN (4); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/e2/27951892b292dc8ae937b4478a9d5e]
+Dec-29 23:46:28.931 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:46:28.932 [Task submitter] INFO  nextflow.Session - [47/011a17] Submitted process > STAGEIN (6)
+Dec-29 23:46:28.962 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 6; name: STAGEIN (6); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/47/011a1739a83d24d112508cd6ea2572]
+Dec-29 23:50:39.119 [Task monitor] DEBUG n.processor.TaskPollingMonitor - No more task to compute -- The following nodes are still active:
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-29 23:50:49.002 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor slurm > tasks to be completed: 3 -- submitted tasks are shown below
+~> TaskHandler[jobId: 501895; id: 7; name: HUMANN3 (WEM004); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/32/f996d336a6131b214f6729aeb05cbf started: 1672328744049; exited: -; ]
+~> TaskHandler[jobId: 501899; id: 8; name: HUMANN3 (WEM002); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/da/f3917867733aae50a24b56f262a1f1 started: 1672328754004; exited: -; ]
+~> TaskHandler[jobId: 501900; id: 9; name: HUMANN3 (WHS328); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/66/ad8ee6600d9056fc2182fb4ddf5c22 started: 1672328764004; exited: -; ]
+Dec-29 23:51:08.992 [Task submitter] DEBUG n.processor.TaskPollingMonitor - %% executor slurm > tasks in the submission queue: 3 -- tasks to be submitted are shown below
+~> TaskHandler[jobId: null; id: 10; name: HUMANN3 (WEM001); status: NEW; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/69/bc43afef790abe80b774d722dec617 started: -; exited: -; ]
+~> TaskHandler[jobId: null; id: 11; name: HUMANN3 (WEM003); status: NEW; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/f0/b39cf22fcf6b85b5070b2153f26699 started: -; exited: -; ]
+~> TaskHandler[jobId: null; id: 12; name: HUMANN3 (WEM005); status: NEW; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/fc/79d016d46e73907cd94d256dc9936c started: -; exited: -; ]
+Dec-29 23:52:04.008 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 501899; id: 8; name: HUMANN3 (WEM002); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/da/f3917867733aae50a24b56f262a1f1 started: 1672328754004; exited: 2022-12-29T15:51:59.155773Z; ]
+Dec-29 23:52:04.071 [Task monitor] DEBUG n.util.BlockingThreadExecutorFactory - Thread pool name=FileTransfer; maxThreads=144; maxQueueSize=432; keepAlive=1m
+Dec-29 23:52:04.078 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:52:04.079 [Task submitter] INFO  nextflow.Session - [34/65300d] Submitted process > CLEANFILES (2)
+Dec-29 23:52:04.170 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 14; name: CLEANFILES (2); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/34/65300d29e23ecf2293c651e0e3c75e]
+Dec-29 23:52:04.357 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM001) > jobId: 501964; workDir: /home/users/astar/gis/teojyj/scratch/test/69/bc43afef790abe80b774d722dec617
+Dec-29 23:52:04.357 [Task submitter] INFO  nextflow.Session - [69/bc43af] Submitted process > HUMANN3 (WEM001)
+Dec-29 23:52:13.079 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:52:13.079 [Task submitter] INFO  nextflow.Session - [d4/ff92f8] Submitted process > CLEANFILES (1)
+Dec-29 23:52:13.149 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 13; name: CLEANFILES (1); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/d4/ff92f8005f94afa10a33bbc5e9c861]
+Dec-29 23:52:19.008 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 501895; id: 7; name: HUMANN3 (WEM004); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/32/f996d336a6131b214f6729aeb05cbf started: 1672328744049; exited: 2022-12-29T15:52:18.87227Z; ]
+Dec-29 23:52:19.317 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM003) > jobId: 501965; workDir: /home/users/astar/gis/teojyj/scratch/test/f0/b39cf22fcf6b85b5070b2153f26699
+Dec-29 23:52:19.317 [Task submitter] INFO  nextflow.Session - [f0/b39cf2] Submitted process > HUMANN3 (WEM003)
+Dec-29 23:52:23.079 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:52:23.079 [Task submitter] INFO  nextflow.Session - [de/c63bd5] Submitted process > CLEANFILES (3)
+Dec-29 23:52:23.107 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 15; name: CLEANFILES (3); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/de/c63bd54a68a89919e7cf8c134f881f]
+Dec-29 23:52:33.078 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:52:33.079 [Task submitter] INFO  nextflow.Session - [4e/b1bb2d] Submitted process > CLEANFILES (4)
+Dec-29 23:52:33.109 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 16; name: CLEANFILES (4); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/4e/b1bb2dfc4bdeec3afa98558a5e0e30]
+Dec-29 23:55:39.112 [Task monitor] DEBUG n.processor.TaskPollingMonitor - No more task to compute -- The following nodes are still active:
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-29 23:55:49.007 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor slurm > tasks to be completed: 3 -- submitted tasks are shown below
+~> TaskHandler[jobId: 501900; id: 9; name: HUMANN3 (WHS328); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/66/ad8ee6600d9056fc2182fb4ddf5c22 started: 1672328764004; exited: -; ]
+~> TaskHandler[jobId: 501964; id: 10; name: HUMANN3 (WEM001); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/69/bc43afef790abe80b774d722dec617 started: 1672329129007; exited: -; ]
+~> TaskHandler[jobId: 501965; id: 11; name: HUMANN3 (WEM003); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/f0/b39cf22fcf6b85b5070b2153f26699 started: 1672329144007; exited: -; ]
+Dec-29 23:56:09.332 [Task submitter] DEBUG n.processor.TaskPollingMonitor - %% executor slurm > tasks in the submission queue: 1 -- tasks to be submitted are shown below
+~> TaskHandler[jobId: null; id: 12; name: HUMANN3 (WEM005); status: NEW; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/fc/79d016d46e73907cd94d256dc9936c started: -; exited: -; ]
+Dec-29 23:59:29.015 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 501964; id: 10; name: HUMANN3 (WEM001); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/69/bc43afef790abe80b774d722dec617 started: 1672329129007; exited: 2022-12-29T15:59:27.489322Z; ]
+Dec-29 23:59:29.063 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:59:29.063 [Task submitter] INFO  nextflow.Session - [1e/382586] Submitted process > CLEANFILES (5)
+Dec-29 23:59:29.093 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 17; name: CLEANFILES (5); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/1e/38258630f3a4667db08a4afa8ccb71]
+Dec-29 23:59:29.286 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM005) > jobId: 501998; workDir: /home/users/astar/gis/teojyj/scratch/test/fc/79d016d46e73907cd94d256dc9936c
+Dec-29 23:59:29.286 [Task submitter] INFO  nextflow.Session - [fc/79d016] Submitted process > HUMANN3 (WEM005)
+Dec-29 23:59:34.015 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 501965; id: 11; name: HUMANN3 (WEM003); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/f0/b39cf22fcf6b85b5070b2153f26699 started: 1672329144007; exited: 2022-12-29T15:59:29.419679Z; ]
+Dec-29 23:59:38.064 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:59:38.064 [Task submitter] INFO  nextflow.Session - [4f/9d019c] Submitted process > CLEANFILES (6)
+Dec-29 23:59:38.093 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 18; name: CLEANFILES (6); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/4f/9d019c5890f98fb8df263c773a1dd2]
+Dec-29 23:59:48.064 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:59:48.064 [Task submitter] INFO  nextflow.Session - [c1/46bf2f] Submitted process > CLEANFILES (8)
+Dec-29 23:59:48.092 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 20; name: CLEANFILES (8); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/c1/46bf2f1513a999c3c7c4b9610a062a]
+Dec-29 23:59:58.064 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-29 23:59:58.064 [Task submitter] INFO  nextflow.Session - [14/d5b47f] Submitted process > CLEANFILES (7)
+Dec-29 23:59:58.092 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 19; name: CLEANFILES (7); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/14/d5b47faea0b5bd355fe35b7d8286a5]
+Dec-30 00:00:39.115 [Task monitor] DEBUG n.processor.TaskPollingMonitor - No more task to compute -- The following nodes are still active:
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-30 00:00:49.014 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor slurm > tasks to be completed: 2 -- submitted tasks are shown below
+~> TaskHandler[jobId: 501900; id: 9; name: HUMANN3 (WHS328); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/66/ad8ee6600d9056fc2182fb4ddf5c22 started: 1672328764004; exited: -; ]
+~> TaskHandler[jobId: 501998; id: 12; name: HUMANN3 (WEM005); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/fc/79d016d46e73907cd94d256dc9936c started: 1672329574029; exited: -; ]
+Dec-30 00:05:39.194 [Task monitor] DEBUG n.processor.TaskPollingMonitor - No more task to compute -- The following nodes are still active:
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-30 00:05:49.016 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor slurm > tasks to be completed: 2 -- submitted tasks are shown below
+~> TaskHandler[jobId: 501900; id: 9; name: HUMANN3 (WHS328); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/66/ad8ee6600d9056fc2182fb4ddf5c22 started: 1672328764004; exited: -; ]
+~> TaskHandler[jobId: 501998; id: 12; name: HUMANN3 (WEM005); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/fc/79d016d46e73907cd94d256dc9936c started: 1672329574029; exited: -; ]
+Dec-30 00:06:44.019 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 501998; id: 12; name: HUMANN3 (WEM005); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/fc/79d016d46e73907cd94d256dc9936c started: 1672329574029; exited: 2022-12-29T16:06:41.49649Z; ]
+Dec-30 00:06:44.093 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-30 00:06:44.094 [Task submitter] INFO  nextflow.Session - [2b/e28331] Submitted process > CLEANFILES (9)
+Dec-30 00:06:44.122 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 21; name: CLEANFILES (9); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/2b/e283316a954561baef581124d5a1e3]
+Dec-30 00:06:53.094 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-30 00:06:53.095 [Task submitter] INFO  nextflow.Session - [9c/130cbf] Submitted process > CLEANFILES (10)
+Dec-30 00:06:53.122 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 22; name: CLEANFILES (10); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/9c/130cbfd42b2745d249e94e81e3308a]
+Dec-30 00:10:39.257 [Task monitor] DEBUG n.processor.TaskPollingMonitor - No more task to compute -- The following nodes are still active:
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-30 00:10:49.019 [Task monitor] DEBUG n.processor.TaskPollingMonitor - !! executor slurm > tasks to be completed: 1 -- submitted tasks are shown below
+~> TaskHandler[jobId: 501900; id: 9; name: HUMANN3 (WHS328); status: RUNNING; exit: -; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/66/ad8ee6600d9056fc2182fb4ddf5c22 started: 1672328764004; exited: -; ]
+Dec-30 00:14:39.717 [SIGINT handler] DEBUG nextflow.Session - Session aborted -- Cause: SIGINT
+Dec-30 00:14:39.718 [SIGINT handler] DEBUG nextflow.Session - The following nodes are still active:
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-30 00:14:39.719 [main] DEBUG nextflow.Session - Session await > all process finished
+Dec-30 00:14:39.720 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Dec-30 00:14:39.725 [main] WARN  n.processor.TaskPollingMonitor - Killing pending tasks (1)
+Dec-30 00:14:39.734 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=21; failedCount=0; ignoredCount=0; cachedCount=0; pendingCount=0; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=1; succeedDuration=9h 10m 40s; failedDuration=0ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=4; peakCpus=52; peakMemory=112 GB; ]
+Dec-30 00:14:39.939 [main] DEBUG nextflow.CacheDB - Closing CacheDB done
+Dec-30 00:14:39.955 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye

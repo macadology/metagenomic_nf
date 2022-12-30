@@ -77,16 +77,13 @@ if(params.profilers.getClass() != Boolean){
 println "Running softwares : $profilers"
 
 //=========== Parameters ===========
-include { FASTP } from '../modules/fastp'
-include { DECONT } from '../modules/decontamination'
-include { BOWTIE } from '../modules/align'
-include { METAPHLAN; HUMANN3 } from '../modules/humann3'
+include { HUMANN3 } from '../modules/humann3'
 
 
-//=========== Define Process ===========
 process STAGEIN {
     maxForks 3
     stageInMode 'copy'
+    executor 'local'
 
     input:
     tuple val(prefix), path(reads)
@@ -96,6 +93,70 @@ process STAGEIN {
 
     script:
     """
+    """
+}
+
+process CLEANFILES {
+    cache 'lenient'
+    cpus 4
+    memory 16.GB
+    queue 'express'
+    time '1hour'
+
+    input:
+    val(files_input)
+
+    output:
+    val(1), emit: IS_CLEAN
+    stdout emit: stdout
+
+    script:
+    """
+    for file in ${files_input}; do
+      # Remove cruff added by Nextflow
+      if [ -e \$file ]; then
+        # Log some info about the file for debugging purposes
+        echo "cleaning \$file"
+        # stat \$file
+        # Get file info: size, access and modify times
+        size=`stat --printf="%s" \$file`
+        atime=`stat --printf="%X" \$file`
+        mtime=`stat --printf="%Y" \$file`
+
+        # Make the file size 0 and set as a sparse file
+        > \$file
+        truncate -s \$size \$file
+        # Reset the timestamps on the file
+        touch -a -d @\$atime \$file
+        touch -m -d @\$mtime \$file
+      fi
+    done
+    """
+}
+
+process TEST {
+    // Copy files from DATA to scratch
+    cpus 4
+    memory 16.GB
+    queue 'express'
+    time '1hour'
+    maxForks 3
+    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
+
+    input:
+    tuple val(prefix), path(reads)
+
+    output:
+    publishDir "/home/users/astar/gis/teojyj/DATA/test", mode: 'move'
+    tuple val(prefix), path("${prefix}.txt"), emit: output
+    stdout emit: stdout
+
+    script:
+    //String indexname = "${bwaIndex.baseName}_${bwaIndex.extension}"
+    """
+    echo "Executing test on ${prefix}"
+    cat ${reads} > ${prefix}.txt
+    echo "haha" > ${prefix}_haha.txt
     """
 }
 
@@ -121,55 +182,21 @@ workflow {
     	ch_input.view()
     }
 
-    //------ Fastp + Decontamination -------
-    if(profilers.contains('fastp')){
-        FASTP(ch_input, outputdir)
-        //FASTP.out.stdout.view { "FASTP STDOUT:\n$it" }
-        ch_fastpreads = FASTP.out.reads
-        //FASTP.out.reads.view()
-    }else{
-        ch_fastpreads = ch_input
-    }
-
-    if(profilers.contains('decont')){
-        decontIndex = file(params.decontIndex)
-        decontIndexDir = decontIndex.getParent()
-        decontIndexName = decontIndex.getName()
-        DECONT(ch_fastpreads, outputdir, decontIndexDir, decontIndexName)
-        ch_reads = DECONT.out.reads
-    }else{
-        ch_reads = ch_fastpreads
-    }
-
-    //------ Metaphlan3 + Humann3 -------
-    if(profilers.contains('bowtie')){
-        if(profilers.contains('metaphlan' && !params.btIndex)){
-            btIndex = file("${params.humannDB_bt2Chocophlan}/${params.humannDB_index}")
-        } else {
-            btIndex = file(params.btIndex)
-        }
-        btIndexDir = btIndex.getParent()
-        btIndexName = btIndex.getName()
-        BOWTIE(ch_reads, outputdir, btIndexDir, btIndexName)
-        ch_sam = BOWTIE.out.sam
-    }else{
-        ch_sam = ch_input
-    }
-
-    if(profilers.contains('metaphlan')){
-        METAPHLAN(ch_sam, outputdir, params.humannDB_index, params.humannDB_bt2Chocophlan)
-        METAPHLAN.out.stdout.view()
-    }
-
+    //https://pirl.unc.edu/blog/tricking-nextflows-caching-system-to-drastically-reduce-storage-usage
     if(profilers.contains('humann3')){
-
-        HUMANN3(ch_reads, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
+        STAGEIN(ch_input)
+        ch_staged = STAGEIN.out
+        HUMANN3(ch_staged, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
         HUMANN3.out.stdout.view()
+        STAGEIN.output
+            .join(HUMANN3.out.output, by: [0])
+            .flatten()
+            .filter{ it =~ /.*fq.gz/ }
+            .set{ ch_done }
+        CLEANFILES(ch_done)
+        CLEANFILES.out.stdout.view()
+        //if( params.delete_intermediates ) {
+        //    clean_work_files(ch_done)
+        //}
     }
-
-    // if(profilers.contains('test')){
-    //     println "master: $outputdir"
-    //     TEST(ch_reads, outputdir, params.testDatabase)
-    //     TEST.out.stdout.view()
-    // }
 }

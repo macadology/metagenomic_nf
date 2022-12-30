@@ -1,0 +1,115 @@
+Dec-30 00:15:23.767 [main] DEBUG nextflow.cli.Launcher - $> nextflow run humann_staging.nf -w /home/users/astar/gis/teojyj/scratch/test --querydir /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed --queryglob 'fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}' --outputdir ~/DATA/projects/csb5-test-reads/data/processed --profilers humann3
+Dec-30 00:15:23.900 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 21.10.6
+Dec-30 00:15:23.924 [main] INFO  nextflow.cli.CmdRun - Launching `humann_staging.nf` [tiny_brenner] - revision: ce597add18
+Dec-30 00:15:23.937 [main] DEBUG nextflow.config.ConfigBuilder - Found config local: /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/nextflow.config
+Dec-30 00:15:23.937 [main] DEBUG nextflow.config.ConfigBuilder - Parsing config file: /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/nextflow.config
+Dec-30 00:15:23.959 [main] DEBUG nextflow.config.ConfigBuilder - Applying config profile: `standard`
+Dec-30 00:15:24.921 [main] DEBUG nextflow.plugin.PluginsFacade - Setting up plugin manager > mode=prod; plugins-dir=/home/users/astar/gis/teojyj/.nextflow/plugins
+Dec-30 00:15:24.922 [main] DEBUG nextflow.plugin.PluginsFacade - Plugins default=[]
+Dec-30 00:15:24.933 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Enabled plugins: []
+Dec-30 00:15:24.933 [main] INFO  org.pf4j.DefaultPluginStatusProvider - Disabled plugins: []
+Dec-30 00:15:24.936 [main] INFO  org.pf4j.DefaultPluginManager - PF4J version 3.4.1 in 'deployment' mode
+Dec-30 00:15:24.946 [main] INFO  org.pf4j.AbstractPluginManager - No plugins
+Dec-30 00:15:24.990 [main] DEBUG nextflow.Session - Session uuid: 4217c182-8ee6-41f3-bd48-69611a782d46
+Dec-30 00:15:24.990 [main] DEBUG nextflow.Session - Run name: tiny_brenner
+Dec-30 00:15:24.991 [main] DEBUG nextflow.Session - Executor pool size: 48
+Dec-30 00:15:25.003 [main] DEBUG nextflow.cli.CmdRun - 
+  Version: 21.10.6 build 5660
+  Created: 21-12-2021 16:55 UTC (22-12-2021 00:55 SGST)
+  System: Linux 4.18.0-147.el8.x86_64
+  Runtime: Groovy 3.0.9 on OpenJDK 64-Bit Server VM 1.8.0_282-b08
+  Encoding: UTF-8 (ANSI_X3.4-1968)
+  Process: 1835581@hpc-login01 [172.16.20.120]
+  CPUs: 48 - Mem: 186.9 GB (1.1 GB) - Swap: 100 GB (94.5 GB)
+Dec-30 00:15:25.019 [main] DEBUG nextflow.Session - Work-dir: /home/users/astar/gis/teojyj/scratch/test [gpfs]
+Dec-30 00:15:25.019 [main] DEBUG nextflow.Session - Script base path does not exist or is not a directory: /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/bin
+Dec-30 00:15:25.027 [main] DEBUG nextflow.executor.ExecutorFactory - Extension executors providers=[]
+Dec-30 00:15:25.036 [main] DEBUG nextflow.Session - Observer factory: DefaultObserverFactory
+Dec-30 00:15:25.079 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 49; maxThreads: 1000
+Dec-30 00:15:25.212 [main] DEBUG nextflow.Session - Session start invoked
+Dec-30 00:15:25.859 [main] DEBUG nextflow.script.ScriptRunner - > Launching execution
+Dec-30 00:15:25.909 [main] INFO  nextflow.script.BaseScript - 
+Dec-30 00:15:25.909 [main] INFO  nextflow.script.BaseScript - querydir : /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed
+Dec-30 00:15:25.909 [main] INFO  nextflow.script.BaseScript - queryglob : fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}
+Dec-30 00:15:25.910 [main] INFO  nextflow.script.BaseScript - query : /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed/**/fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}
+Dec-30 00:15:25.910 [main] INFO  nextflow.script.BaseScript - outputdir : ~/DATA/projects/csb5-test-reads/data/processed
+Dec-30 00:15:25.911 [main] WARN  nextflow.script.ScriptBinding - Access to undefined parameter `database` -- Initialise it to a default value eg. `params.database = some_value`
+Dec-30 00:15:25.911 [main] INFO  nextflow.script.BaseScript - database: null
+Dec-30 00:15:25.911 [main] INFO  nextflow.script.BaseScript - 
+Dec-30 00:15:25.916 [main] INFO  nextflow.script.BaseScript - Running softwares : [humann3]
+Dec-30 00:15:26.139 [main] DEBUG nextflow.util.CustomThreadPool - Creating default thread pool > poolSize: 49; maxThreads: 1000
+Dec-30 00:15:26.227 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: local
+Dec-30 00:15:26.227 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-30 00:15:26.231 [main] DEBUG nextflow.executor.Executor - [warm up] executor > local
+Dec-30 00:15:26.236 [main] DEBUG n.processor.LocalPollingMonitor - Creating local task monitor for executor 'local' > cpus=48; memory=186.9 GB; capacity=3; pollInterval=100ms; dumpInterval=5m
+Dec-30 00:15:26.238 [main] DEBUG n.processor.TaskPollingMonitor - Creating submit rate limit of 1 reqs by 10 seconds
+Dec-30 00:15:26.320 [main] DEBUG nextflow.script.ProcessConfig - Config settings `withName:HUMANN3` matches process HUMANN3
+Dec-30 00:15:26.322 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: slurm
+Dec-30 00:15:26.323 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'slurm'
+Dec-30 00:15:26.330 [main] DEBUG nextflow.executor.Executor - [warm up] executor > slurm
+Dec-30 00:15:26.332 [main] DEBUG n.processor.TaskPollingMonitor - Creating task monitor for executor 'slurm' > capacity: 3; pollInterval: 5s; dumpInterval: 5m 
+Dec-30 00:15:26.333 [main] DEBUG n.executor.AbstractGridExecutor - Creating executor 'slurm' > queue-stat-interval: 1m
+Dec-30 00:15:26.441 [main] DEBUG nextflow.executor.ExecutorFactory - << taskConfig executor: null
+Dec-30 00:15:26.441 [main] DEBUG nextflow.executor.ExecutorFactory - >> processorType: 'local'
+Dec-30 00:15:26.456 [main] DEBUG nextflow.Session - Workflow process names [dsl2]: STAGEIN, TEST, CLEANFILES, HUMANN3, METAPHLAN
+Dec-30 00:15:26.464 [main] WARN  nextflow.Session - There's no process matching config selector: BWA
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: BOWTIE
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: MAPPED
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: FASTP
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: DECONT
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: KRAKEN2
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: BRACKEN
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: SRST2
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: RGI
+Dec-30 00:15:26.465 [main] WARN  nextflow.Session - There's no process matching config selector: CENTRIFUGE
+Dec-30 00:15:26.465 [main] DEBUG nextflow.Session - Ignite dataflow network (4)
+Dec-30 00:15:26.471 [PathVisitor-1] DEBUG nextflow.file.PathVisitor - files for syntax: glob; folder: /home/users/astar/gis/teojyj/DATA/projects/csb5-test-reads/data/processed/; pattern: **/fastp*_{1,2}*{fastq,fastq.gz,fq,fq.gz}; options: [maxDepth:2]
+Dec-30 00:15:26.472 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > STAGEIN
+Dec-30 00:15:26.472 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > HUMANN3
+Dec-30 00:15:26.472 [main] DEBUG nextflow.processor.TaskProcessor - Starting process > CLEANFILES
+Dec-30 00:15:26.473 [main] DEBUG nextflow.script.ScriptRunner - > Await termination 
+Dec-30 00:15:26.473 [main] DEBUG nextflow.Session - Session await
+Dec-30 00:15:26.603 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-30 00:15:26.607 [Task submitter] INFO  nextflow.Session - [8c/7213e0] Submitted process > STAGEIN (1)
+Dec-30 00:15:26.653 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 3; name: STAGEIN (1); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/8c/7213e04a95fe2c216c8db61ccf70f6]
+Dec-30 00:15:26.666 [Actor Thread 44] INFO  nextflow.script.BaseScript - /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/~/DATA/projects/csb5-test-reads/data/processed/WEM004/humann3 exists. Skipping WEM004 ...
+Dec-30 00:15:27.084 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM004) > jobId: 502078; workDir: /home/users/astar/gis/teojyj/scratch/test/47/10ffc695037d035709b2518d115eec
+Dec-30 00:15:27.085 [Task submitter] INFO  nextflow.Session - [47/10ffc6] Submitted process > HUMANN3 (WEM004)
+Dec-30 00:15:31.349 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 502078; id: 7; name: HUMANN3 (WEM004); status: COMPLETED; exit: 148; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/47/10ffc695037d035709b2518d115eec started: 1672330531338; exited: 2022-12-29T16:15:28.271625Z; ]
+Dec-30 00:15:31.354 [Task monitor] INFO  nextflow.processor.TaskProcessor - [47/10ffc6] NOTE: Process `HUMANN3 (WEM004)` terminated with an error exit status (148) -- Error is ignored
+Dec-30 00:15:36.246 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-30 00:15:36.246 [Task submitter] INFO  nextflow.Session - [8b/0dfc4d] Submitted process > STAGEIN (2)
+Dec-30 00:15:36.975 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 1; name: STAGEIN (2); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/8b/0dfc4d38bf2faa990815ba1ae15eeb]
+Dec-30 00:15:37.293 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WHS328) > jobId: 502079; workDir: /home/users/astar/gis/teojyj/scratch/test/f5/9a27f2ab6677b3fd7009127373d93f
+Dec-30 00:15:37.293 [Task submitter] INFO  nextflow.Session - [f5/9a27f2] Submitted process > HUMANN3 (WHS328)
+Dec-30 00:15:46.245 [Task submitter] DEBUG nextflow.executor.LocalTaskHandler - Launch cmd line: /bin/bash -ue .command.run
+Dec-30 00:15:46.246 [Task submitter] INFO  nextflow.Session - [5e/c17923] Submitted process > STAGEIN (3)
+Dec-30 00:15:46.277 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[id: 2; name: STAGEIN (3); status: COMPLETED; exit: 0; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/5e/c17923fff9462898c86742b36b1b80]
+Dec-30 00:15:46.282 [Actor Thread 63] INFO  nextflow.script.BaseScript - /home/users/astar/gis/teojyj/code/metagenomic_nf/ACRC/~/DATA/projects/csb5-test-reads/data/processed/WEM002/humann3 exists. Skipping WEM002 ...
+Dec-30 00:15:46.593 [Task submitter] DEBUG nextflow.executor.GridTaskHandler - [SLURM] submitted process HUMANN3 (WEM002) > jobId: 502082; workDir: /home/users/astar/gis/teojyj/scratch/test/8c/aadbd986148a9fcfe9374fd7d659c6
+Dec-30 00:15:46.594 [Task submitter] INFO  nextflow.Session - [8c/aadbd9] Submitted process > HUMANN3 (WEM002)
+Dec-30 00:15:51.339 [Task monitor] DEBUG n.processor.TaskPollingMonitor - Task completed > TaskHandler[jobId: 502082; id: 9; name: HUMANN3 (WEM002); status: COMPLETED; exit: 148; error: -; workDir: /home/users/astar/gis/teojyj/scratch/test/8c/aadbd986148a9fcfe9374fd7d659c6 started: 1672330551336; exited: 2022-12-29T16:15:48.487643Z; ]
+Dec-30 00:15:51.340 [Task monitor] INFO  nextflow.processor.TaskProcessor - [8c/aadbd9] NOTE: Process `HUMANN3 (WEM002)` terminated with an error exit status (148) -- Error is ignored
+Dec-30 00:15:53.327 [SIGINT handler] DEBUG nextflow.Session - Session aborted -- Cause: SIGINT
+Dec-30 00:15:53.336 [SIGINT handler] DEBUG nextflow.Session - The following nodes are still active:
+[process] HUMANN3
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: -
+  port 1: (value) bound ; channel: procdir
+  port 2: (value) bound ; channel: humannDB_index
+  port 3: (value) bound ; channel: humannDB_Uniref
+  port 4: (value) bound ; channel: humannDB_Chocophlan
+  port 5: (value) bound ; channel: humannDB_bt2Chocophlan
+  port 6: (cntrl) -     ; channel: $
+
+[process] CLEANFILES
+  status=ACTIVE
+  port 0: (queue) OPEN  ; channel: files_input
+  port 1: (cntrl) -     ; channel: $
+
+Dec-30 00:15:53.338 [main] DEBUG nextflow.Session - Session await > all process finished
+Dec-30 00:15:53.338 [main] DEBUG nextflow.Session - Session await > all barriers passed
+Dec-30 00:15:53.343 [main] WARN  n.processor.TaskPollingMonitor - Killing pending tasks (1)
+Dec-30 00:15:53.352 [main] DEBUG nextflow.trace.WorkflowStatsObserver - Workflow completed > WorkflowStats[succeededCount=3; failedCount=2; ignoredCount=2; cachedCount=0; pendingCount=3; submittedCount=0; runningCount=0; retriesCount=0; abortedCount=1; succeedDuration=728ms; failedDuration=208ms; cachedDuration=0ms;loadCpus=0; loadMemory=0; peakRunning=2; peakCpus=32; peakMemory=64 GB; ]
+Dec-30 00:15:53.509 [main] DEBUG nextflow.CacheDB - Closing CacheDB done
+Dec-30 00:15:53.529 [main] DEBUG nextflow.script.ScriptRunner - > Execution complete -- Goodbye
