@@ -16,9 +16,10 @@ nextflow run main.nf -profile jonai --readtype raw --profilers fastp,decont
 nextflow run main.nf -profile jonai --readtype fastp --profilers decont
 nextflow run main.nf -profile jonai --readtype decont --profilers kraken2,bracken --krakenKeepOutput true #Save all kraken output
 nextflow run main.nf -profile jonai -w [WORKDIR] --krakenMMAP --profilers kraken2,bracken #Preload kraken database. See README.md
+nextflow run main.nf -profile jonai --querydir <querydir> --queryglob "<dbname>/*kraken2.report" --size 1 --outputdir <outputdir> --profilers bracken
 nextflow run main.nf -profile jonai --profilers fastp,kraken2,bracken,srst2,humann3
-nextflow run main.nf -profile jonai --profilers align --bwaIndex [ref.fasta]
-nextflow run main.nf -profile jonai --profilers align --bwaIndexDir [IndexDir] --bwaIndex [ref.fasta]
+nextflow run main.nf -profile jonai --profilers BWA --bwaIndex [ref.fasta]
+nextflow run main.nf -profile jonai --profilers BWA --bwaIndexDir [IndexDir] --bwaIndex [ref.fasta]
 
 #AWSBatch examples :
 nextflow run main.nf -profile batch -plugins nf-amazon --bucket-dir s3://jon-nextflow-work --profilers humann3

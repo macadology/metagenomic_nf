@@ -25,16 +25,38 @@ process FASTP {
         """
     }else{
         println "Executing fastp on $prefix ..."
+        //println "${reads.size()}"
+        //println "${reads}, ${reads.size()}"
         if (reads.size()==2) {
             reads1 = reads[0]
             reads2 = reads[1]
             """
             fastp -q 25 -p 20 -i $reads1 -I $reads2 -o fastp_$reads1 -O fastp_$reads2 -j fastp_${prefix}.json -h fastp_${prefix}.HTML
             """
-        } else (reads.size()==1) {
+        } else {
             """
-            fastp -q 25 -p 20 -i $reads -o fastp_$reads1 -O fastp_$reads2 -j fastp_${prefix}.json -h fastp_${prefix}.HTML
+            fastp -q 25 -p 20 -i $reads -o fastp_$reads -j fastp_${prefix}.json -h fastp_${prefix}.HTML
             """
         }
     }
 }
+
+
+// process TOT_READCOUNT {
+//     // validExitStatus 0,148
+//     errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
+//     tag "${prefix}"
+// 
+//     input:
+//     tuple val(prefix), path(fastpjs)
+//
+//     output:
+//     tuple val("${prefix}"), env(totalreads), emit: output
+//     stdout emit: stdout
+//
+//     script:
+//     """
+//     totalreads=\$(jq '.summary | .after_filtering | .total_reads' $fastpjs | head)
+//     totalreads=\$((totalreads*2))
+//     """
+// }

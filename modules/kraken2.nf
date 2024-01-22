@@ -20,7 +20,8 @@ process KRAKEN2 {
 
     output:
     publishDir "$procdir/${prefix}/kraken2/${krakenDB.name}", mode: 'copy'
-    tuple val("${prefix}"), path("${prefix}.kraken2.report"), path("${prefix}.kraken2.tax"), emit: output
+    path("${prefix}.kraken2.*")
+    tuple val("${prefix}"), path("${prefix}.kraken2.report"), emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
@@ -37,9 +38,10 @@ process KRAKEN2 {
         """
         kraken2 $mmap--db $krakenDB $paired--threads $params.krakenThreads --output ${prefix}.kraken2.out --report ${prefix}.kraken2.tax $reads --use-mpa-style > /dev/null
 
-        kraken2 $mmap--db $krakenDB $paired--threads $params.krakenThreads --report ${prefix}.kraken2.report $reads > /dev/null
+        kraken2 $mmap--db $krakenDB $paired--threads $params.krakenThreads --report ${prefix}.kraken2.report --report-minimizer-data $reads > /dev/null
 
         if [ ! ${params.krakenKeepOutput} == "true" ]; then
+            echo "$prefix"
             rm ${prefix}.kraken2.out
         fi
         """
@@ -48,17 +50,19 @@ process KRAKEN2 {
 
 process BRACKEN {
     tag "${prefix}"
-    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
+    errorStrategy { task.exitStatus in 148 ? 'ignore' : 'ignore' }
+    //errorStrategy { task.exitStatus in 148 ? 'ignore' : 'terminate' }
     container 'macadology/kraken2'
 
     input:
-    tuple val(prefix), path(krakenReport), path(krakenTax)
+    tuple val(prefix), path(krakenReport)
     val(procdir)
     path(brackenDB)
 
     output:
     publishDir "$procdir/${prefix}/kraken2/${brackenDB.name}", mode: 'copy'
     tuple path("${prefix}.bracken.P"), path("${prefix}.bracken.F"), path("${prefix}.bracken.G"), path("${prefix}.bracken.S"), emit: output
+    tuple path("*.report") , emit: output_report
     stdout emit: stdout
     val("${prefix}"), emit: prefix
 
@@ -72,9 +76,12 @@ process BRACKEN {
     }else{
         """
         which bracken
+        kR="$krakenReport"
+        echo \${kR%%.report}
         for taxa in P F G S
         do
             bracken -d $brackenDB -r $params.krakenReadlength -i $krakenReport -o ${prefix}.bracken.\$taxa -l \$taxa
+            mv \${kR%%.report}_bracken.report ${prefix}.bracken.\$taxa.report
         done
         """
     }

@@ -13,8 +13,8 @@ process BWA {
 
     output:
     publishDir "$procdir/${prefix}/bwa", mode: 'copy'
-    tuple val(prefix), path("${prefix}.${bwaIndexName}.sam"), emit: sam
-    path "${prefix}.${bwaIndexName}.sam", emit: output
+    tuple val(prefix), path("${prefix}.${bwaIndexName}.sorted.bam"), emit: sam
+    path "${prefix}.${bwaIndexName}.sorted.bam*", emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
@@ -28,8 +28,12 @@ process BWA {
         """
     }else{
         """
-        bwa mem -t ${task.cpus} ${bwaIndexDir}/${bwaIndexName} $reads | \\
-        samtools view $params.samtoolsOptions - > "${outputdir}/${prefix}.${bwaIndexName}.sam"
+        bwa mem -t ${task.cpus} ${bwaIndexDir}/${bwaIndexName} $reads | samtools sort - > ${prefix}.${bwaIndexName}.sorted.bam
+        samtools index ${prefix}.${bwaIndexName}.sorted.bam > ${prefix}.${bwaIndexName}.sorted.bam.bai
+        samtools view -c -F 268 ${prefix}.${bwaIndexName}.sorted.bam > ${prefix}.${bwaIndexName}.sorted.bam.mapped_counts
+        #bwa mem -t ${task.cpus} ${bwaIndexDir}/${bwaIndexName} $reads | \\
+        #samtools view $params.samtoolsOptions - > ${prefix}.${bwaIndexName}.sam
+        #samtools view -c -F 268 ${prefix}.${bwaIndexName}.sam > ${prefix}.${bwaIndexName}.mapped_count
         """
     }
 }
@@ -80,13 +84,14 @@ process MINIMAP {
     input:
     tuple val(prefix), path(reads)
     val(procdir)
+    val(mmReadType)
     path(mmIndexDir)
     val(mmIndexName)
 
     output:
     publishDir "$procdir/${prefix}/minimap2", mode: 'copy'
-    tuple val(prefix), path("${prefix}.${mmIndexName}.sam"), emit: sam
-    path "${prefix}.${mmIndexName}.sam", emit: output
+    tuple val(prefix), path("${prefix}.${mmIndexName}.sam*"), emit: sam
+    //path "${prefix}.${mmIndexName}.sorted.bam*", emit: output
     val("${prefix}"), emit: prefix
     stdout emit: stdout
 
@@ -98,8 +103,14 @@ process MINIMAP {
         exit 148
         """
     }else{
+        //Note: Depending on whether minimap is used to align to a single fasta reference or multiple fasta reference, it'll affect the header output of the same file and affect subsequent bam conversion.
         """
-        minimap2 -t ${task.cpus} -ax sr ${mmIndexDir}/${mmIndexName} $reads > ${prefix}.${mmIndexName}.sam
+        minimap2 -t ${task.cpus} -ax ${mmReadType} --split-prefix=tmp ${mmIndexDir}/${mmIndexName} $reads -o ${prefix}.${mmIndexName}.sam
+        samtools view -c -F 268 ${prefix}.${mmIndexName}.sam > ${prefix}.${mmIndexName}.sam.mapped_counts
+        #minimap2 -t ${task.cpus} -ax ${mmReadType} ${mmIndexDir}/${mmIndexName} $reads -o ${prefix}.${mmIndexName}.sam
+        #samtools sort ${prefix}.${mmIndexName}.sam > ${prefix}.${mmIndexName}.sorted.bam
+        #samtools index ${prefix}.${mmIndexName}.sorted.bam > ${prefix}.${mmIndexName}.sorted.bam.bai
+        #samtools view -c -F 268 ${prefix}.${mmIndexName}.sorted.sam > ${prefix}.${mmIndexName}.sorted.bam.mapped_counts
         """
     }
 }

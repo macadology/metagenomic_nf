@@ -76,7 +76,7 @@ println "database: $params.database"
 println ""
 
 //============= Parse profilers ===========
-Set profilers_expected = ['BWA', 'bowtie', 'minimap', 'sam2fastq', 'fastp', 'decont', 'kraken2', 'bracken', 'centrifuge', 'humann3', 'metaphlan', 'test', 'srst2', 'rgi']
+Set profilers_expected = ['BWA', 'bowtie', 'minimap', 'metaphlan2']
 Set profilers = []
 if(params.profilers.getClass() != Boolean){
   Set profilers_input = params.profilers.split(',')
@@ -91,51 +91,9 @@ println "Running softwares : $profilers"
 
 
 //=========== Parameters ===========
-include { BWA; BOWTIE; MINIMAP; SAM2FASTQ; MAPPED } from './modules/align'
-include { FASTP } from './modules/fastp'
-include { DECONT } from './modules/decontamination'
-include { KRAKEN2; BRACKEN } from './modules/kraken2'
-include { CENTRIFUGE } from './modules/centrifuge'
-include { HUMANN3; METAPHLAN } from './modules/humann3'
-include { TEST } from './modules/test'
-include { SRST2 } from './modules/srst2'
-include { RGI } from './modules/rgi'
+include { BWA; BOWTIE; MINIMAP} from './modules/align'
+include { METAPHLAN2 } from './modules/humann3'
 
-//=========== Kraken Preprocesses ===========
-// https://groovy-lang.gitlab.io/101-scripts/basico/command_local-en.html
-// For kraken, load database into ram.
-// Remember to increase the space of /dev/shm
-// Check /etc/fstab and add line
-// none         /dev/shm            tmpfs       defaults,size=61G     0       0
-// Not ideal for using in combination with --resume
-if(params.krakenMMAP && profilers.contains('kraken2')){
-    def result  = new StringBuilder()
-    def error   = new StringBuilder()
-    database = file(params.krakenDB)
-    databaseDir = database.getParent()
-    databaseName = database.getName()
-    DB = "/dev/shm/database/${databaseName}"
-    cmd0 = ["sh", "-c", "mkdir -p $DB"].execute()
-    cmd0.consumeProcessOutput(result, error)
-    println result
-    println error
-    println "Loading $params.krakenDB to $DB..."
-    cmd = ["sh", "-c", "cp -r $params.krakenDB/*.k2d $DB"].execute()
-    cmd.consumeProcessOutput(result, error)
-    println result
-    println error
-    cmd.waitForOrKill(1000*60*10) //Wait 10 min before initiating the other steps
-}
-
-//====== Filter =======
-// Get input prefex from file
-// def inputFile = new File(params.inputfile)
-// if (inputFile.exists()) {
-//     def list = inputFile.collect {it}
-// }
-//
-// def array = new File(params.inputfile) as String[]
-//---------- Main workflow ------------
 workflow {
     //------ Get prefix and files ---------
     querydirname = new File(querydir).name
@@ -152,32 +110,12 @@ workflow {
         }
     }
 
-    ch_input = ch_preinput
+    ch_reads = ch_preinput
     //ch_input = ch_preinput.filter { prefix, filenames ->   }
 
     //------- Display files ---------
     if(params.profilers.size() == 0 ) {
-    	ch_input.view()
-    }
-
-    //------ Fastp + Decontamination -------
-    if(profilers.contains('fastp')){
-        FASTP(ch_input, outputdir)
-        //FASTP.out.stdout.view { "FASTP STDOUT:\n$it" }
-        ch_fastpreads = FASTP.out.reads
-        //FASTP.out.reads.view()
-    }else{
-        ch_fastpreads = ch_input
-    }
-
-    if(profilers.contains('decont')){
-        decontIndex = file(params.decontIndex)
-        decontIndexDir = decontIndex.getParent()
-        decontIndexName = decontIndex.getName()
-        DECONT(ch_fastpreads, outputdir, decontIndexDir, decontIndexName)
-        //ch_reads = DECONT.out.reads
-    }else{
-        ch_reads = ch_fastpreads
+    	ch_reads.view()
     }
 
     //-------- Alignment ----------
@@ -191,7 +129,7 @@ workflow {
         //BWA.out.stdout.view { "ALIGN STDOUT:\n$it" }
         //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
     }else{
-        ch_sam = ch_input
+        ch_sam = ch_reads
     }
 
     if(profilers.contains('bowtie')){
@@ -204,7 +142,7 @@ workflow {
         //ALIGN.out.stdout.view { "ALIGN STDOUT:\n$it" }
         //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
     }else{
-        ch_sam = ch_input
+        ch_sam = ch_reads
     }
 
     if(profilers.contains('minimap')){
@@ -217,99 +155,12 @@ workflow {
         ch_sam = MINIMAP.out.sam
         MINIMAP.out.stdout.view { "MINIMAP STDOUT:\n$it" }
     }else{
-        ch_sam = ch_input
-    }
-
-    if(profilers.contains('sam2fastq')){
-        SAM2FASTQ(ch_sam, outputdir)
-        ch_reads = SAM2FASTQ.out.reads
-    }
-
-    //------ Kraken + Bracken ---------
-    if(profilers.contains('kraken2')){
-        if(params.krakenMMAP){
-            KRAKEN2(ch_reads, outputdir, DB)
-            // Note, this causes the output folder to be named 'database'. Fix it
-        }else{
-            KRAKEN2(ch_reads, outputdir, params.krakenDB)
-        }
-        //KRAKEN2.out.stdout.view { "KRAKEN2 STDOUT:\n$it" }
-    }
-
-    if(profilers.contains('bracken')){
-        if(profilers.contains('kraken2')){
-            ch_kraken = KRAKEN2.out.output
-            //ch_kraken.view()
-        }else{
-            if(params.outputdir == "" || params.querydir == ""){
-                throw new Exception("Error: You are running bracken only. Please specify a query (--querydir <dir>), queryglob that include the database name (--queryglob <dbname>/*.kraken2.report), and output (--outputdir) directory")
-            }
-            ch_kraken = ch_input
-            // The code below has issues identifying the correct prefix
-            // ch_kraken = Channel.fromFilePairs("$querydir/**/*kraken2.report",flat: false, size: 1, maxDepth: params.maxdepth, checkIfExists: true) { file ->
-            //     for(int i = 0; i < 3 ; i++) {
-            //         file = file.getParent()
-            //         folder = file.getParent()
-            //         // Look for prefix by going up the path structure
-            //         if (querydirname == folder.name) {
-            //             pref = file.name //prefixzz
-            //             return pref
-            //             break
-            //         }
-            //     }
-            // }
-            //ch_kraken.view()
-        }
-        BRACKEN(ch_kraken, outputdir, params.krakenDB)
-        //BRACKEN.out.stdout.view { "BRACKEN STDOUT:\n$it" }
-    }
-
-    //------ Centrifuge --------
-    if(profilers.contains('centrifuge')){
-        CENTRIFUGE(ch_reads, outputdir, params.centrifugeDBdir)
+        ch_sam = ch_reads
     }
 
     //------ Metaphlan3 + Humann3 -------
-    if(profilers.contains('metaphlan')){
-        METAPHLAN(ch_sam, outputdir, params.metaphlanDB_index, params.metaphlanDB_bt2Chocophlan)
-        METAPHLAN.out.stdout.view()
-    }
-
-    if(profilers.contains('humann3')){
-        HUMANN3(ch_reads, outputdir, params.humannDB_index, params.humannDB_Uniref, params.humannDB_Chocophlan, params.humannDB_bt2Chocophlan)
-        HUMANN3.out.stdout.view()
-    }
-
-    //------ Test -------
-    if(profilers.contains('test')){
-        //ch_reads.view()
-        println "testDatabase: $params.testDatabase"
-        TEST(ch_reads, outputdir, params.testDatabase)
-        TEST.out.stdout.view()
-    }
-
-    //------ srst2 -------
-    if(profilers.contains('srst2')){
-        SRST2(ch_reads, outputdir, params.srst2DB)
-    }
-
-    //------ Megares (RGI) ----------
-    if(profilers.contains('rgi')){
-        RGI(ch_reads, outputdir)
-    }
-
-    //------ diamond + megan
-}
-
-//---------- Clean up ------------
-// Removes database from ram to free up space.
-workflow.onComplete {
-    if(params.krakenMMAP && profilers.contains('kraken2')){
-        println "Removing $DB..."
-        cmd2 = ["sh", "-c", "rm -r $DB"].execute()
-        cmd2.waitForOrKill(1000*10)
+    if(profilers.contains('metaphlan2')){
+        METAPHLAN2(ch_sam, outputdir, params.metaphlan2DB_index_name, params.metaphlan2DB_pkl)
+        METAPHLAN2.out.stdout.view()
     }
 }
-
-//----------- TODO ------------
-// Add customized log files

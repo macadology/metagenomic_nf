@@ -1,4 +1,4 @@
- // decontamination
+// decontamination
 process DECONT {
     // Remove reads that are aligned to target sequence
     // TBD: Only works for paired reads for now. Add long read decont
@@ -33,11 +33,11 @@ process DECONT {
             """
         }else{
             """
-            bwa mem -t ${task.cpus} $decontIndexDir/${decontIndexName} $reads1 $reads2 > aln-se_${prefix}.sam
-            samtools fastq -f12 -F256  -1  decont_${decontIndexName}_$reads1 -2 decont_${decontIndexName}_$reads2 aln-se_${prefix}.sam
+            #bwa mem -t ${task.cpus} $decontIndexDir/${decontIndexName} $reads1 $reads2 | decont_filter.py | samtools fastq -f12 -F256  -1
+            bwa mem -t ${task.cpus} $decontIndexDir/${decontIndexName} $reads1 $reads2 | samtools fastq -f12 -F256 -1  decont_${decontIndexName}_$reads1 -2 decont_${decontIndexName}_$reads2 -
             """
         }
-    } else if (reads.size()==1) {
+    } else if (!(reads[1])) {
         // For single read (long reads)
         decontread = new File("$params.procdir/${prefix}/fastp/decont_${decontIndexName}_$reads")
         if (decontread.exists() && !params.overwrite) {
@@ -47,8 +47,8 @@ process DECONT {
             """
         }else{
             """
-            bwa mem -t ${task.cpus} $decontIndexDir/${decontIndexName} $reads > aln-se_${prefix}.sam
-            samtools fastq -f12 -F256 decont_${decontIndexName}_$reads aln-se_${prefix}.sam
+            #bwa mem -t ${task.cpus} $decontIndexDir/${decontIndexName} $reads | samtools fastq -f12 -F256 -o decont_${decontIndexName}_$reads -
+            minimap2 -t ${task.cpus} -ax map-ont $decontIndexDir/${decontIndexName} $reads | samtools fastq -f4 -F256 -0 decont_${decontIndexName}_$reads -
             """
         }
     }

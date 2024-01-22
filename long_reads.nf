@@ -147,10 +147,10 @@ if(params.profilers.getClass() != Boolean){
 println "Running softwares : $profilers"
 
 //=========== Parameters ===========
-include { MINIMAP_LR; MAPPED } from './modules/align'
+include { MINIMAP; MAPPED } from './modules/align'
 include { FASTP } from './modules/fastp'
 include { DECONT } from './modules/decontamination'
-include { KRAKEN2_LR; BRACKEN } from './modules/kraken2'
+include { KRAKEN2; BRACKEN } from './modules/kraken2'
 include { METAPHLAN } from './modules/humann3'
 include { TEST } from './modules/test'
 include { SRST2 } from './modules/srst2'
@@ -229,13 +229,14 @@ workflow {
     //-------- Alignment ----------
     if(profilers.contains('minimap')){
         // Add check database
+        mmReadType = "map-ont"
         mmIndex = file(params.mmIndex)
         mmIndexDir = mmIndex.getParent()
         mmIndexName = mmIndex.getName()
-        MINIMAP_LR(ch_reads, outputdir, mmIndexDir, mmIndexName)
-        ch_sam = MINIMAP_LR.out.sam
+        MINIMAP(ch_reads, outputdir, mmReadType, mmIndexDir, mmIndexName)
+        ch_sam = MINIMAP.out.sam
         //MAPPED(ALIGN.out.output.collect(), outputdir, params.bwaIndexName)
-        MINIMAP_LR.out.stdout.view { "MINIMAP STDOUT:\n$it" }
+        MINIMAP.out.stdout.view { "MINIMAP STDOUT:\n$it" }
         //MAPPED.out.stdout.view { "MAPPED STDOUT:\n$it" }
     }else{
         ch_sam = ch_input
@@ -244,17 +245,17 @@ workflow {
     //------ Kraken + Bracken ---------
     if(profilers.contains('kraken2')){
         if(params.krakenMMAP){
-            KRAKEN2_LR(ch_reads, outputdir, DB)
+            KRAKEN2(ch_reads, outputdir, DB)
             // Note, this causes the output folder to be named 'database'. Fix it
         }else{
-            KRAKEN2_LR(ch_reads, outputdir, params.krakenDB)
+            KRAKEN2(ch_reads, outputdir, params.krakenDB)
         }
         //KRAKEN2.out.stdout.view { "KRAKEN2 STDOUT:\n$it" }
     }
 
     if(profilers.contains('bracken')){
         if(profilers.contains('kraken2')){
-            ch_kraken = KRAKEN2_LR.out.output
+            ch_kraken = KRAKEN2.out.output
             //ch_kraken.view()
         }else{
             //ch_kraken = Channel.fromFilePairs("$params.procdir/**/kraken2/*.{report,tax}", flat: true, size: 2, checkIfExists: true, maxDepth: 2) { file -> file.getParent().getParent().name }
